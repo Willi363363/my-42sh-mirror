@@ -81,7 +81,7 @@ re: fclean all
 $(TESTS): $(NAME)
 	$(CC) $(CFLAGS) $(TESTS_LDFLAGS) $(TESTS_SRC) $(SRC) -o $@
 
-tests_run: $(TESTS)
+unit_tests: $(TESTS)
 	./$(TESTS)
 
 tests_re: clean tests_run
