@@ -14,13 +14,13 @@ jobs:
     steps:
     - uses: actions/checkout@v6
     - name: make
-      run: make CICD=1
+      run: make CC=gcc
     - name: make clean
       run: make clean
     - name: make fclean
       run: make fclean
     - name: make re
-      run: make CICD=1 re
+      run: make re CC=gcc
     - name: check binary
       run: ls -l ./42sh
     - name: Discord notification
@@ -76,11 +76,11 @@ jobs:
     - name: setup valgrind
       run:  sudo apt-get install -y valgrind
     - name: make
-      run: make CICD=1 DEBUG=1
+      run: make CC=gcc
     - name: check file
       run: ls -l ./42sh
     - name: run valgrind
-      run: valgrind --leak-check=full --show-leak-kinds=all ./mncc ./.github/test.c
+      run: valgrind --leak-check=full --show-leak-kinds=all ./42sh ./.github/test.c
     - name: clean
       run: make fclean
     - name: Discord notification

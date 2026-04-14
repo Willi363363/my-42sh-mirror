@@ -51,7 +51,7 @@ DEBUG_FLAGS = -g3 -Wall -Wextra
 
 OBJ = $(SRC:.c=.o)
 
-NAME = mysh
+NAME = 42sh
 
 all: $(NAME)
 
