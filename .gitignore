@@ -1,0 +1,11 @@
+#*#
+*.o
+*.pch
+*.gcda
+*.gcno
+tests
+.vscode
+*~
+.bonus
+mysh
+.tester

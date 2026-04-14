@@ -1,55 +1,74 @@
 ##
-## EPITECH PROJECT, 2026
+## EPITECH PROJECT, 2025
 ## Makefile
 ## File description:
-## Makefile for mncc project
-#
-ifdef CICD
-	CC = gcc
-else
-	CC = epiclang
-endif
+## Compile minishell
+##
 
-CFLAGS = -Iinclude -W -Wall -Werror -Wextra -g
-LDFLAGS = -g
-ifdef DEBUG
-	CFLAGS += -g3
-endif
+SRC = 	./src/main.c \
+		./src/env_parse.c \
+		./src/shell_commands/misc/misc_builtins.c \
+		./src/cleanup_functions/free_struct.c \
+		./src/tokenizers.c \
+		./src/lib/str_to_word_array.c \
+		./src/lib/my_replace_char.c \
+		./src/lib/my_str_remove_char.c \
+		./src/lib/my_str_count_char.c \
+		./src/lib/my_safe_free.c \
+		./src/lib/my_strdup.c \
+		./src/lib/my_strdup_skip_chars.c \
+		./src/lib/my_strlen.c \
+		./src/lib/my_tablen.c \
+		./src/lib/my_strcmp.c \
+		./src/lib/my_strcpy.c \
+		./src/lib/my_strcpy_limit.c \
+		./src/lib/my_strcat.c \
+		./src/lib/my_putstr.c \
+		./src/lib/my_putstr_error.c \
+		./src/lib/my_put_nbr.c \
+		./src/lib/my_putchar.c \
+		./src/lib/my_strncmp.c \
+		./src/lib/my_check_if_alphanums.c \
+		./src/shell_commands/system_cmds.c \
+		./src/shell_commands/own_files_cmds.c \
+		./src/shell_commands/directories_related/dir_cmds.c \
+		./src/shell_commands/directories_related/dir_functions.c \
+		./src/shell_commands/env_related/env_cmds.c \
+		./src/shell_commands/env_related/setenv.c \
+		./src/shell_commands/env_related/unsetenv.c \
+		./src/parsing/parsing.c \
+		./src/parsing/lexer.c \
+		./src/parsing/tokenize/tokenize.c \
+		./src/parsing/tokenize/operators.c \
+		./src/parsing/launcher/launcher.c \
+		./src/parsing/launcher/executing/exec.c \
+		./src/parsing/launcher/executing/exec_bis.c \
+		./src/parsing/launcher/executing/error_handling.c
 
-NAME = 42sh
+CC = epiclang
 
-SRC = $(shell find src -name '*.c')
-SRC_OBJ = $(SRC:.c=.o)
+DEBUG_FLAGS = -g3 -Wall -Wextra
 
-MAIN = main.c
-MAIN_OBJ = $(MAIN:.c=.o)
+OBJ = $(SRC:.c=.o)
 
-TESTS = unit_tests
-TESTS_SRC = $(shell find tests -name '*.c')
-TESTS_LDFLAGS = -lcriterion --coverage
+NAME = mysh
 
 all: $(NAME)
 
-%.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
+$(NAME): $(OBJ)
+	$(CC) $(OBJ) -o $(NAME)
 
-$(NAME): $(SRC_OBJ) $(MAIN_OBJ)
-	$(CC) $(LDFLAGS) -o $@ $^
+%.o: %.c
+	$(CC) -c $< -o $@ -Iincludes
+
+debug :
+	$(CC) $(DEBUG_FLAGS) $(SRC) -o $(NAME) -Iincludes
 
 clean:
-	$(RM) $(SRC_OBJ) $(MAIN_OBJ) *.gcno *.gcda *.gcov
+	rm -f $(OBJ)
+	rm -f *.gcda *.gcno *.pch
 
 fclean: clean
-	$(RM) $(NAME) $(TESTS)
+	rm -f $(NAME) secured
 
 re: fclean all
-
-$(TESTS): $(NAME)
-	$(CC) $(CFLAGS) $(TESTS_LDFLAGS) $(TESTS_SRC) $(SRC) -o $@
-
-tests_run: $(TESTS)
-	./$(TESTS)
-
-tests_re: clean tests_run
-
-.PHONY: all clean fclean re
