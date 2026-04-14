@@ -46,44 +46,49 @@ SRC = 	./src/main.c \
 		./src/parsing/launcher/executing/error_handling.c
 
 CC = epiclang
-
-DEBUG_FLAGS = -g3 -Wall -Wextra
+CFLAGS = -Wall -Wextra -Iincludes
+DEBUG_FLAGS = -g3 $(CFLAGS)
 
 OBJ = $(SRC:.c=.o)
-
 NAME = 42sh
 
+# --- Unit Tests ---
 TESTS = unit_tests
 TESTS_SRC = $(shell find tests -name '*.c')
+TESTS_OBJ = $(TESTS_SRC:.c=.o)
 TESTS_LDFLAGS = -lcriterion --coverage
-
 
 all: $(NAME)
 
 $(NAME): $(OBJ)
-	$(CC) $(OBJ) -o $(NAME)
+	$(CC) $(CFLAGS) $(OBJ) -o $@
 
 %.o: %.c
-	$(CC) -c $< -o $@ -Iincludes
+	$(CC) $(CFLAGS) -c $< -o $@
 
-debug :
-	$(CC) $(DEBUG_FLAGS) $(SRC) -o $(NAME) -Iincludes
+debug:
+	$(CC) $(DEBUG_FLAGS) $(SRC) -o $(NAME)
+
+# Compilation des tests
+$(TESTS): $(TESTS_OBJ) $(OBJ)
+	$(CC) $(CFLAGS) $(TESTS_LDFLAGS) $^ -o $@
+
+tests_run: $(TESTS)
+	@echo "Running unit tests..."
+	@./$(TESTS)
+
+tests_clean:
+	rm -f $(TESTS_OBJ) $(TESTS)
+
+tests_re: tests_clean tests_run
 
 clean:
-	rm -f $(OBJ)
+	rm -f $(OBJ) $(TESTS_OBJ)
 	rm -f *.gcda *.gcno *.pch
 
 fclean: clean
-	rm -f $(NAME) secured
+	rm -f $(NAME) $(TESTS) secured
 
 re: fclean all
 
-$(TESTS): $(NAME)
-	$(CC) $(CFLAGS) $(TESTS_LDFLAGS) $(TESTS_SRC) $(SRC) -o $@
-
-unit_tests: $(TESTS)
-	./$(TESTS)
-
-tests_re: clean tests_run
-
-.PHONY: all clean fclean re
+.PHONY: all clean fclean re debug tests_run tests_clean tests_re
