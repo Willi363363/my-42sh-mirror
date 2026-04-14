@@ -53,6 +53,11 @@ OBJ = $(SRC:.c=.o)
 
 NAME = 42sh
 
+TESTS = unit_tests
+TESTS_SRC = $(shell find tests -name '*.c')
+TESTS_LDFLAGS = -lcriterion --coverage
+
+
 all: $(NAME)
 
 $(NAME): $(OBJ)
@@ -73,3 +78,12 @@ fclean: clean
 
 re: fclean all
 
+$(TESTS): $(NAME)
+	$(CC) $(CFLAGS) $(TESTS_LDFLAGS) $(TESTS_SRC) $(SRC) -o $@
+
+tests_run: $(TESTS)
+	./$(TESTS)
+
+tests_re: clean tests_run
+
+.PHONY: all clean fclean re
