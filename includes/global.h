@@ -20,10 +20,12 @@
     #include <sys/time.h>
     #include <sys/resource.h>
     #include <errno.h>
+    #include <ncurses.h>
     #define MAX_PATH_LEN 4096
     #include "structs.h"
     #include "parsing.h"
     #include "prototypes.h"
+    #include "editor.h"
     #define SUCCESS 0
     #define EXIT_FAIL 84
     #define RUNNING 1
