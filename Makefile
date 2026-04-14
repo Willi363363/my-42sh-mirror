@@ -2,27 +2,18 @@
 ## EPITECH PROJECT, 2026
 ## Makefile
 ## File description:
-## Makefile for mncc project
+## Makefile for minishell project
 #
-ifdef CICD
-	CC = gcc
-else
-	CC = epiclang
-endif
 
 CFLAGS = -Iinclude -W -Wall -Werror -Wextra -g
 LDFLAGS = -g
-ifdef DEBUG
-	CFLAGS += -g3
-endif
 
 NAME = 42sh
 
-SRC = $(shell find src -name '*.c')
-SRC_OBJ = $(SRC:.c=.o)
+CC = epiclang
 
-MAIN = main.c
-MAIN_OBJ = $(MAIN:.c=.o)
+SRC = $(shell find src -name '*.c')
+OBJ = $(SRC:.c=.o)
 
 TESTS = unit_tests
 TESTS_SRC = $(shell find tests -name '*.c')
@@ -33,11 +24,11 @@ all: $(NAME)
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(NAME): $(SRC_OBJ) $(MAIN_OBJ)
+$(NAME): $(OBJ)
 	$(CC) $(LDFLAGS) -o $@ $^
 
 clean:
-	$(RM) $(SRC_OBJ) $(MAIN_OBJ) *.gcno *.gcda *.gcov
+	$(RM) $(OBJ) *.gcno *.gcda *.gcov
 
 fclean: clean
 	$(RM) $(NAME) $(TESTS)
