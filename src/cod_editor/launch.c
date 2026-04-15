@@ -13,13 +13,19 @@ int cod(shell_parameters_t *shell)
     char *custom_file_name;
     int ac = my_tablen(shell->command);
 
-    if (ac != 2)
-        return editor_help(EXIT_FAIL);
+    if (ac != 2) {
+        shell->last_exit_code = EXIT_FAIL;
+        return editor_help(COMMAND_ERROR);
+    }
     if (strcmp(shell->command[1], "--help") == 0
-        || strcmp(shell->command[1], "--h") == 0)
-        return editor_help(SUCCESS);
+        || strcmp(shell->command[1], "--h") == 0) {
+        shell->last_exit_code = SUCCESS;
+        return editor_help(COMMAND_FOUND);
+    }
     if (strcmp(shell->command[1], "--version") == 0
-        || strcmp(shell->command[1], "--v") == 0)
-        return editor_version(SUCCESS);
-    return SUCCESS;
+        || strcmp(shell->command[1], "--v") == 0) {
+        shell->last_exit_code = SUCCESS;
+        return editor_version(COMMAND_FOUND);
+    }
+    return COMMAND_FOUND;
 }
