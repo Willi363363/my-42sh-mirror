@@ -14,12 +14,12 @@ int cod(shell_parameters_t *shell)
     int ac = my_tablen(shell->command);
 
     if (ac != 2)
-        return display_help_message(EXIT_FAIL);
+        return editor_help(EXIT_FAIL);
     if (strcmp(shell->command[1], "--help") == 0
         || strcmp(shell->command[1], "--h") == 0)
-            return display_help_message(SUCCESS);
+        return editor_help(SUCCESS);
     if (strcmp(shell->command[1], "--version") == 0
         || strcmp(shell->command[1], "--v") == 0)
-        return display_version_message(SUCCESS);
+        return editor_version(SUCCESS);
     return SUCCESS;
 }

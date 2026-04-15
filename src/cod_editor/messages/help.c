@@ -6,7 +6,7 @@
 */
 #include "global.h"
 
-int editor_help(code)
+int editor_help(int code)
 {
     printf("\n\033[1;32mCOD - Text Editor v%s\033[0m\n\n", VERSION);
     printf("\033[1;35mUSAGE:\033[0m\n");
@@ -20,7 +20,7 @@ int editor_help(code)
     return code;
 }
 
-int display_version_message(code)
+int editor_version(int code)
 {
     printf("------------------------\n");
     printf("Current version : \033[32m%s\033[0m\n", VERSION);

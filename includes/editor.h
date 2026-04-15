@@ -15,7 +15,7 @@ typedef struct file_infos_s {
     char *filecontent;
     int fd;
 } file_infos_t;
-int editor_help(code);
-int display_version_message(code);
+int editor_help(int code);
+int editor_version(int code);
 int create_new_file_ask(void);
 #endif /* EDITOR_H_ */

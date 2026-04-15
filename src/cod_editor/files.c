@@ -9,6 +9,7 @@
 static void fill_new_file_infos(char *name, file_infos_t *file_infos)
 {
     struct stat file_stat_new;
+
     file_infos->file_stat = &file_stat_new;
     file_infos->filepath = my_strdup(name);
     file_infos->fd = open(name, O_RDONLY);
