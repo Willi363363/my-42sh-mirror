@@ -4,7 +4,7 @@
 ** File description:
 ** This file contains all my envs commands functions.
 */
-#include "../../../../includes/global.h"
+#include "global.h"
 
 static int get_branch(git_detector_t *git_d)
 {
