@@ -13,11 +13,13 @@ int cod(shell_parameters_t *shell)
     char *custom_file_name;
     int ac = my_tablen(shell->command);
 
-    if (ac != 2) {
-        if (ac == 1) {
-            
-        } else {
-
-        }
-    }
+    if (ac != 2)
+        return display_help_message(EXIT_FAIL);
+    if (strcmp(shell->command[1], "--help") == 0
+        || strcmp(shell->command[1], "--h") == 0)
+            return display_help_message(SUCCESS);
+    if (strcmp(shell->command[1], "--version") == 0
+        || strcmp(shell->command[1], "--v") == 0)
+        return display_version_message(SUCCESS);
+    return SUCCESS;
 }
