@@ -4,7 +4,7 @@
 ** File description:
 ** This file contains all my envs commands functions.
 */
-#include "../../../../includes/global.h"
+#include "global.h"
 
 static int get_branch(git_detector_t *git_d)
 {
@@ -15,10 +15,12 @@ static int get_branch(git_detector_t *git_d)
         return EXIT_FAIL;
     if (stat(git_d->head_path, &s) == -1)
         return EXIT_FAIL;
-    git_d->branch = malloc((s.st_size - my_strlen(git_d->head_path) + 1) * sizeof(char));
+    git_d->branch =
+        malloc((s.st_size - my_strlen(git_d->head_path) + 1) * sizeof(char));
     if (!(git_d->branch))
         return EXIT_FAIL;
-    if (read(fd, git_d->branch + my_strlen(git_d->head_path) + 1, sizeof(git_d->branch)) == -1) {
+    if (read(fd, git_d->branch + my_strlen(git_d->head_path) +
+            1, sizeof(git_d->branch)) == -1) {
         free(git_d->branch);
         return EXIT_FAIL;
     }
@@ -92,8 +94,10 @@ static int git_rewind_dirs(shell_parameters_t *shell, git_detector_t *git_d)
 
 static int cpy_limit_with_i(char *dest, char const *src, int max, int *i)
 {
-    for (int j = 0; (*i) < max && src[j] != '\0'; (*i)++, j++)
+    for (int j = 0; (*i) < max && src[j] != '\0'; (*i)++) {
         dest[(*i)] = src[j];
+        j++;
+    }
     dest[(*i)] = '\0';
     return SUCCESS;
 }
@@ -104,6 +108,15 @@ static int git_free_nleave(git_detector_t *git_d, int with_code)
     my_safe_free((void *)&git_d->head_path);
     my_safe_free((void *)&git_d->path_to_dgit);
     return with_code;
+}
+
+static void draw_git(shell_parameters_t *shell,
+    git_detector_t *git_d, char *tempo, int *i)
+{
+    cpy_limit_with_i(shell->pwd, tempo, MAX_PATH_LEN, i);
+    cpy_limit_with_i(shell->pwd, " [git]: (", MAX_PATH_LEN, i);
+    cpy_limit_with_i(shell->pwd, git_d->branch, MAX_PATH_LEN, i);
+    cpy_limit_with_i(shell->pwd, ")", MAX_PATH_LEN, i);
 }
 
 int git_handler(shell_parameters_t *shell)
@@ -124,10 +137,7 @@ int git_handler(shell_parameters_t *shell)
     tempo = my_strdup(shell->pwd);
     if (!tempo)
         return git_free_nleave(&git_d, EXIT_FAIL);
-    cpy_limit_with_i(shell->pwd, tempo, MAX_PATH_LEN, &i);
-    cpy_limit_with_i(shell->pwd, " [git]: (", MAX_PATH_LEN, &i);
-    cpy_limit_with_i(shell->pwd, git_d.branch, MAX_PATH_LEN, &i);
-    cpy_limit_with_i(shell->pwd, ")", MAX_PATH_LEN, &i);
+    draw_git(shell, &git_d, tempo, &i);
     free(tempo);
     return git_free_nleave(&git_d, SUCCESS);
 }

@@ -3,3 +3,11 @@
 unit_tests
 *.gcda
 *.gcno
+tests
+.vscode
+*~
+.bonus
+mysh
+.tester
+42sh
+.Cod_editor_proto_42sh

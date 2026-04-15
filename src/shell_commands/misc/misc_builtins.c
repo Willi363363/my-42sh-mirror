@@ -25,5 +25,8 @@ int misc_cmds_assert(char *line, shell_parameters_t *shell)
     if (my_strncmp(line, "echo $?", 7) == 0 &&
         (line[7] == '\n' || line[7] == '\0'))
         return echo_last_exit_status(shell);
+    if (my_strncmp(line, "cod", 3) == 0 &&
+        (line[3] == '\n' || line[3] == '\0' || line[3] == ' '))
+        return cod(shell);
     return SUCCESS;
 }
