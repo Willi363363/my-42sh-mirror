@@ -21,10 +21,10 @@ $(NAME): $(OBJ)
 	$(CC) $(OBJ) -o $(NAME)
 
 %.o: %.c
-	$(CC) -c $< -o $@ -Iincludes
+	$(CC) -c $< -o $@ -Iincludes -lncurses
 
 debug :
-	$(CC) $(DEBUG_FLAGS) $(SRC) -o $(NAME) -Iincludes
+	$(CC) $(DEBUG_FLAGS) $(SRC) -o $(NAME) -Iincludes -lncurses
 
 clean:
 	rm -f $(OBJ)
