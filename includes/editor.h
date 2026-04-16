@@ -28,4 +28,5 @@ typedef struct editor_s {
 int editor_help(int code);
 int editor_version(int code);
 int create_new_file_ask(void);
+void shortcuts_checker(editor_t *editor, file_infos_t *file_infos);
 #endif /* EDITOR_H_ */

@@ -53,6 +53,23 @@ static void main_loop()
 
 }
 
+static void chars_watcher(editor_t *editor, file_infos_t *file_infos)
+{
+    if (editor->typed_ch >= 32 && editor->typed_ch <= 126 || editor->typed_ch == '\t' || editor->typed_ch == '\n') {
+        editor->len = strlen(file_infos->filecontent);
+        editor->tempo_realloc_test = realloc(file_infos->filecontent, editor->len + 2);
+        if (editor->tempo_realloc_test == NULL) {
+            endwin();
+            printf("REALLOC FAILED, try again...");
+            exit(EXIT_FAIL);
+        } else
+            file_infos->filecontent = editor->tempo_realloc_test;
+        file_infos->filecontent[editor->len] = (char)editor->typed_ch;
+        file_infos->filecontent[editor->len + 1] = '\0';
+        editor->saved = 0;
+    }
+}
+
 int window_loop(file_infos_t *file_infos)
 {
     editor_t editor = {1, 0, 0, NULL, 1, 0, 0, 0};
@@ -65,22 +82,9 @@ int window_loop(file_infos_t *file_infos)
         draw_header(file_infos);
         getyx(stdscr, editor.cursor_y, editor.cursor_x);
         saved_status(&editor);
-        if (editor.typed_ch == CTRL('s')) {
-            write_in_file(file_infos, file_infos->filecontent);
-            editor.saved = 1;
-        } else if (editor.typed_ch >= 32 && editor.typed_ch <= 126 || editor.typed_ch == '\t' || editor.typed_ch == '\n') {
-            editor.len = strlen(file_infos->filecontent);
-            editor.tempo_realloc_test = realloc(file_infos->filecontent, editor.len + 2);
-            if (editor.tempo_realloc_test == NULL) {
-                endwin();
-                printf("REALLOC FAILED, try again...");
-                exit(EXIT_FAIL);
-            } else
-                file_infos->filecontent = editor.tempo_realloc_test;
-            file_infos->filecontent[editor.len] = (char)editor.typed_ch;
-            file_infos->filecontent[editor.len + 1] = '\0';
-            editor.saved = 0;
-        } else if (editor.typed_ch == KEY_BACKSPACE || editor.typed_ch == 127 || editor.typed_ch == 8) {
+        shortcuts_checker(&editor, file_infos);
+        chars_watcher(&editor, file_infos);
+        if (editor.typed_ch == KEY_BACKSPACE || editor.typed_ch == 127 || editor.typed_ch == 8) {
             editor.len = strlen(file_infos->filecontent);
             if (editor.len > 0) {
                 editor.tempo_realloc_test = realloc(file_infos->filecontent, editor.len);
