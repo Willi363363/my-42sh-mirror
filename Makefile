@@ -35,6 +35,6 @@ clean:
 	rm -f *.gcda *.gcno *.pch
 
 fclean: clean
-	rm -f $(NAME) secured
+	rm -f $(NAME) history
 
 re: fclean all

@@ -60,8 +60,10 @@ int main_loop(shell_parameters_t *shell)
         if (shell->nread > 0 && shell->line[shell->nread - 1] == '\n')
             shell->line[shell->nread - 1] = '\0';
         shell->command = tokenize_formatter(shell);
-        if (shell->command != NULL)
+        if (shell->command != NULL) {
             execute_ast(shell);
+            push_to_history(shell);
+        }
         clean_every_iteration(shell);
     }
     return cleanup_launcher(shell);
