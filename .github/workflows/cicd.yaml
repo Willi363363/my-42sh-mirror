@@ -14,7 +14,6 @@ jobs:
 
   # ─────────────────────────────────────────────
   # GARDE-FOU : bloque la boucle infinie
-  # Si c'est le bot GitHub Actions qui push (suite au mirror), on skip tout
   # ─────────────────────────────────────────────
   guard:
     runs-on: ubuntu-latest
@@ -171,52 +170,55 @@ jobs:
         run: docker run cs-test:latest
 
   # ─────────────────────────────────────────────
-  # 7. Notif Discord UNIQUE — résumé de tout le run
-  #    Toujours exécuté, même si les jobs précédents ont skip
+  # 7. Notif Discord UNIQUE — résumé final
   # ─────────────────────────────────────────────
   notify:
-    needs: [sync, basic-build, cs-build, coverage-build, valgrind-build, scan-build-test]
+    needs: [guard, sync, basic-build, cs-build, coverage-build, valgrind-build, scan-build-test]
     if: always() && needs.guard.outputs.should_run == 'true'
     runs-on: ubuntu-latest
 
     steps:
-      - name: Build summary message
+      - name: Build summary
         id: summary
         run: |
-          # Si pas de changement, on envoie juste un message court
           if [ "${{ needs.sync.outputs.changed }}" != "true" ]; then
-            echo "title=⏭️ Aucun changement détecté" >> $GITHUB_OUTPUT
-            echo "description=Rien de nouveau sur le repo orga. Aucun test lancé." >> $GITHUB_OUTPUT
-            echo "status=info" >> $GITHUB_OUTPUT
+            # Pas de changement — message court
+            echo "title=Aucun changement detecte" >> $GITHUB_OUTPUT
+
+            # Heredoc pour la description (evite les erreurs de format)
+            {
+              echo "description<<EOF"
+              echo "Rien de nouveau sur le repo orga. Aucun test lance."
+              echo "EOF"
+            } >> $GITHUB_OUTPUT
+
           else
-            # On regarde si un job a fail
             BUILD="${{ needs.basic-build.result }}"
             CS="${{ needs.cs-build.result }}"
             COV="${{ needs.coverage-build.result }}"
             VAL="${{ needs.valgrind-build.result }}"
             SCAN="${{ needs.scan-build-test.result }}"
 
-            ICON_BUILD=$( [ "$BUILD" = "success" ] && echo "✅" || echo "❌" )
-            ICON_CS=$( [ "$CS" = "success" ] && echo "✅" || echo "❌" )
-            ICON_COV=$( [ "$COV" = "success" ] && echo "✅" || echo "❌" )
-            ICON_VAL=$( [ "$VAL" = "success" ] && echo "✅" || echo "❌" )
-            ICON_SCAN=$( [ "$SCAN" = "success" ] && echo "✅" || echo "❌" )
+            icon() { [ "$1" = "success" ] && echo "OK" || echo "FAIL"; }
 
             if [[ "$BUILD $CS $COV $VAL $SCAN" == *"failure"* ]]; then
-              echo "title=❌ Des tests ont échoué" >> $GITHUB_OUTPUT
+              echo "title=ECHEC : des tests ont echoue" >> $GITHUB_OUTPUT
             else
-              echo "title=✅ Tous les tests sont passés" >> $GITHUB_OUTPUT
+              echo "title=SUCCES : tous les tests sont passes" >> $GITHUB_OUTPUT
             fi
 
-            DESC="${ICON_BUILD} Build de base : ${BUILD}
-          ${ICON_CS} Coding style  : ${CS}
-          ${ICON_COV} Coverage      : ${COV}
-          ${ICON_VAL} Valgrind      : ${VAL}
-          ${ICON_SCAN} Scan-build    : ${SCAN}
-
-          **Commit :** \`${{ github.sha }}\`
-          **Auteur :** \`${{ github.actor }}\`"
-            echo "description=$DESC" >> $GITHUB_OUTPUT
+            {
+              echo "description<<EOF"
+              echo "Build de base  : $(icon $BUILD) $BUILD"
+              echo "Coding style   : $(icon $CS) $CS"
+              echo "Coverage       : $(icon $COV) $COV"
+              echo "Valgrind       : $(icon $VAL) $VAL"
+              echo "Scan-build     : $(icon $SCAN) $SCAN"
+              echo ""
+              echo "Commit : ${{ github.sha }}"
+              echo "Auteur : ${{ github.actor }}"
+              echo "EOF"
+            } >> $GITHUB_OUTPUT
           fi
 
       - name: Send Discord notification
