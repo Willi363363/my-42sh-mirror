@@ -13,9 +13,30 @@ on:
 jobs:
 
   # ─────────────────────────────────────────────
-  # 1. Mirror orga → mirror, détecte les changements
+  # GARDE-FOU : bloque la boucle infinie
+  # Si c'est le bot GitHub Actions qui push (suite au mirror), on skip tout
+  # ─────────────────────────────────────────────
+  guard:
+    runs-on: ubuntu-latest
+    outputs:
+      should_run: ${{ steps.check.outputs.should_run }}
+    steps:
+      - name: Check if triggered by bot
+        id: check
+        run: |
+          echo "Actor: ${{ github.actor }}"
+          if [ "${{ github.actor }}" = "github-actions[bot]" ]; then
+            echo "should_run=false" >> $GITHUB_OUTPUT
+          else
+            echo "should_run=true" >> $GITHUB_OUTPUT
+          fi
+
+  # ─────────────────────────────────────────────
+  # 1. Mirror + détection de changements
   # ─────────────────────────────────────────────
   sync:
+    needs: [guard]
+    if: needs.guard.outputs.should_run == 'true'
     runs-on: ubuntu-latest
     outputs:
       changed: ${{ steps.check_changes.outputs.changed }}
@@ -54,17 +75,6 @@ jobs:
           cd upstream
           git push mirror main --force
 
-      - name: Discord notification — sync
-        uses: sarisia/actions-status-discord@v1
-        if: always()
-        with:
-          webhook: ${{ secrets.DISCORD_WEBHOOK }}
-          title: "🔄 Mirror sync"
-          description: |
-            **Repo :** `G-PSU-200-MPL-2-1-42sh-5`
-            **Changements détectés :** ${{ steps.check_changes.outputs.changed == 'true' && '✅ Oui — mirror mis à jour' || '⏭️ Non — aucun test lancé' }}
-            **Déclenché par :** `${{ github.event_name }}` sur `${{ github.ref_name }}`
-
   # ─────────────────────────────────────────────
   # 2. Build de base
   # ─────────────────────────────────────────────
@@ -85,16 +95,6 @@ jobs:
         run: make CC=gcc re
       - name: check binary
         run: ls -l ./42sh
-      - name: Discord notification — basic-build
-        uses: sarisia/actions-status-discord@v1
-        if: always()
-        with:
-          webhook: ${{ secrets.DISCORD_WEBHOOK }}
-          title: "🔨 Build de base (make / make re)"
-          description: |
-            **Commit :** `${{ github.sha }}`
-            **Auteur :** `${{ github.actor }}`
-            **Message :** ${{ github.event.head_commit.message }}
 
   # ─────────────────────────────────────────────
   # 3. Coding style
@@ -112,16 +112,6 @@ jobs:
         run: docker build . -t cs-test --file Dockerfile --tag my-image-name:$(date +%s)
       - name: Run coding-style tests
         run: docker run cs-test:latest
-      - name: Discord notification — coding style
-        uses: sarisia/actions-status-discord@v1
-        if: always()
-        with:
-          webhook: ${{ secrets.DISCORD_WEBHOOK }}
-          title: "🎨 Coding style"
-          description: |
-            **Commit :** `${{ github.sha }}`
-            **Auteur :** `${{ github.actor }}`
-            Vérification du style de code via Docker.
 
   # ─────────────────────────────────────────────
   # 4. Coverage
@@ -139,16 +129,6 @@ jobs:
         run: docker build . -t coverage-test --file Dockerfile --tag my-image-name:$(date +%s)
       - name: Run coverage tests
         run: docker run coverage-test:latest
-      - name: Discord notification — coverage
-        uses: sarisia/actions-status-discord@v1
-        if: always()
-        with:
-          webhook: ${{ secrets.DISCORD_WEBHOOK }}
-          title: "📊 Coverage"
-          description: |
-            **Commit :** `${{ github.sha }}`
-            **Auteur :** `${{ github.actor }}`
-            Analyse de la couverture de tests via Docker.
 
   # ─────────────────────────────────────────────
   # 5. Valgrind
@@ -172,16 +152,6 @@ jobs:
         run: valgrind --leak-check=full --show-leak-kinds=all ./42sh ./.github/test.c
       - name: clean
         run: make fclean
-      - name: Discord notification — valgrind
-        uses: sarisia/actions-status-discord@v1
-        if: always()
-        with:
-          webhook: ${{ secrets.DISCORD_WEBHOOK }}
-          title: "🧠 Valgrind — détection de fuites mémoire"
-          description: |
-            **Commit :** `${{ github.sha }}`
-            **Auteur :** `${{ github.actor }}`
-            Analyse mémoire complète (`--leak-check=full --show-leak-kinds=all`).
 
   # ─────────────────────────────────────────────
   # 6. Scan-build
@@ -199,13 +169,59 @@ jobs:
         run: docker build . -t cs-test --file Dockerfile --tag my-image-name:$(date +%s)
       - name: Run scan-build tests
         run: docker run cs-test:latest
-      - name: Discord notification — scan-build
+
+  # ─────────────────────────────────────────────
+  # 7. Notif Discord UNIQUE — résumé de tout le run
+  #    Toujours exécuté, même si les jobs précédents ont skip
+  # ─────────────────────────────────────────────
+  notify:
+    needs: [sync, basic-build, cs-build, coverage-build, valgrind-build, scan-build-test]
+    if: always() && needs.guard.outputs.should_run == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Build summary message
+        id: summary
+        run: |
+          # Si pas de changement, on envoie juste un message court
+          if [ "${{ needs.sync.outputs.changed }}" != "true" ]; then
+            echo "title=⏭️ Aucun changement détecté" >> $GITHUB_OUTPUT
+            echo "description=Rien de nouveau sur le repo orga. Aucun test lancé." >> $GITHUB_OUTPUT
+            echo "status=info" >> $GITHUB_OUTPUT
+          else
+            # On regarde si un job a fail
+            BUILD="${{ needs.basic-build.result }}"
+            CS="${{ needs.cs-build.result }}"
+            COV="${{ needs.coverage-build.result }}"
+            VAL="${{ needs.valgrind-build.result }}"
+            SCAN="${{ needs.scan-build-test.result }}"
+
+            ICON_BUILD=$( [ "$BUILD" = "success" ] && echo "✅" || echo "❌" )
+            ICON_CS=$( [ "$CS" = "success" ] && echo "✅" || echo "❌" )
+            ICON_COV=$( [ "$COV" = "success" ] && echo "✅" || echo "❌" )
+            ICON_VAL=$( [ "$VAL" = "success" ] && echo "✅" || echo "❌" )
+            ICON_SCAN=$( [ "$SCAN" = "success" ] && echo "✅" || echo "❌" )
+
+            if [[ "$BUILD $CS $COV $VAL $SCAN" == *"failure"* ]]; then
+              echo "title=❌ Des tests ont échoué" >> $GITHUB_OUTPUT
+            else
+              echo "title=✅ Tous les tests sont passés" >> $GITHUB_OUTPUT
+            fi
+
+            DESC="${ICON_BUILD} Build de base : ${BUILD}
+          ${ICON_CS} Coding style  : ${CS}
+          ${ICON_COV} Coverage      : ${COV}
+          ${ICON_VAL} Valgrind      : ${VAL}
+          ${ICON_SCAN} Scan-build    : ${SCAN}
+
+          **Commit :** \`${{ github.sha }}\`
+          **Auteur :** \`${{ github.actor }}\`"
+            echo "description=$DESC" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Send Discord notification
         uses: sarisia/actions-status-discord@v1
-        if: always()
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
-          title: "🔍 Scan-build — analyse statique"
-          description: |
-            **Commit :** `${{ github.sha }}`
-            **Auteur :** `${{ github.actor }}`
-            Analyse statique du code source via scan-build.
+          title: ${{ steps.summary.outputs.title }}
+          description: ${{ steps.summary.outputs.description }}
