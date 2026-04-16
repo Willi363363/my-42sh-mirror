@@ -44,4 +44,7 @@ fclean: clean
 
 re: fclean all
 
+unit_tests: $(TESTS_OBJ)
+	$(CC) $(TESTS_OBJ) -o $(TESTS) $(TESTS_LDFLAGS)
+
 .PHONY: all clean fclean re debug tests_run tests_clean tests_re
