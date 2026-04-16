@@ -40,5 +40,7 @@ int cod(shell_parameters_t *shell)
         return 33;
     else
         return 34;
+    if (window_loop(&file_infos) == EXIT_FAIL)
+        return COMMAND_ERROR;
     return COMMAND_FOUND;
 }
