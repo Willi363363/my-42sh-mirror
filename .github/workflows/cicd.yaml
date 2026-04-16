@@ -38,7 +38,6 @@ jobs:
         id: check_changes
         run: |
           cd upstream
-          # Récupère le dernier commit du mirror (s'il existe)
           MIRROR_SHA=$(git ls-remote git@github.com:Willi363363/my-42sh-mirror.git refs/heads/main | awk '{print $1}')
           ORGA_SHA=$(git rev-parse HEAD)
           echo "Orga SHA  : $ORGA_SHA"
@@ -55,14 +54,19 @@ jobs:
           cd upstream
           git push mirror main --force
 
-      - name: Discord notification
+      - name: Discord notification — sync
         uses: sarisia/actions-status-discord@v1
         if: always()
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          title: "🔄 Mirror sync"
+          description: |
+            **Repo :** `G-PSU-200-MPL-2-1-42sh-5`
+            **Changements détectés :** ${{ steps.check_changes.outputs.changed == 'true' && '✅ Oui — mirror mis à jour' || '⏭️ Non — aucun test lancé' }}
+            **Déclenché par :** `${{ github.event_name }}` sur `${{ github.ref_name }}`
 
   # ─────────────────────────────────────────────
-  # 2. Build de base — lancé seulement si changement
+  # 2. Build de base
   # ─────────────────────────────────────────────
   basic-build:
     needs: [sync]
@@ -81,11 +85,16 @@ jobs:
         run: make CC=gcc re
       - name: check binary
         run: ls -l ./42sh
-      - name: Discord notification
+      - name: Discord notification — basic-build
         uses: sarisia/actions-status-discord@v1
         if: always()
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          title: "🔨 Build de base (make / make re)"
+          description: |
+            **Commit :** `${{ github.sha }}`
+            **Auteur :** `${{ github.actor }}`
+            **Message :** ${{ github.event.head_commit.message }}
 
   # ─────────────────────────────────────────────
   # 3. Coding style
@@ -103,11 +112,16 @@ jobs:
         run: docker build . -t cs-test --file Dockerfile --tag my-image-name:$(date +%s)
       - name: Run coding-style tests
         run: docker run cs-test:latest
-      - name: Discord notification
+      - name: Discord notification — coding style
         uses: sarisia/actions-status-discord@v1
         if: always()
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          title: "🎨 Coding style"
+          description: |
+            **Commit :** `${{ github.sha }}`
+            **Auteur :** `${{ github.actor }}`
+            Vérification du style de code via Docker.
 
   # ─────────────────────────────────────────────
   # 4. Coverage
@@ -125,11 +139,16 @@ jobs:
         run: docker build . -t coverage-test --file Dockerfile --tag my-image-name:$(date +%s)
       - name: Run coverage tests
         run: docker run coverage-test:latest
-      - name: Discord notification
+      - name: Discord notification — coverage
         uses: sarisia/actions-status-discord@v1
         if: always()
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          title: "📊 Coverage"
+          description: |
+            **Commit :** `${{ github.sha }}`
+            **Auteur :** `${{ github.actor }}`
+            Analyse de la couverture de tests via Docker.
 
   # ─────────────────────────────────────────────
   # 5. Valgrind
@@ -153,11 +172,16 @@ jobs:
         run: valgrind --leak-check=full --show-leak-kinds=all ./42sh ./.github/test.c
       - name: clean
         run: make fclean
-      - name: Discord notification
+      - name: Discord notification — valgrind
         uses: sarisia/actions-status-discord@v1
         if: always()
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          title: "🧠 Valgrind — détection de fuites mémoire"
+          description: |
+            **Commit :** `${{ github.sha }}`
+            **Auteur :** `${{ github.actor }}`
+            Analyse mémoire complète (`--leak-check=full --show-leak-kinds=all`).
 
   # ─────────────────────────────────────────────
   # 6. Scan-build
@@ -175,8 +199,13 @@ jobs:
         run: docker build . -t cs-test --file Dockerfile --tag my-image-name:$(date +%s)
       - name: Run scan-build tests
         run: docker run cs-test:latest
-      - name: Discord notification
+      - name: Discord notification — scan-build
         uses: sarisia/actions-status-discord@v1
         if: always()
         with:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          title: "🔍 Scan-build — analyse statique"
+          description: |
+            **Commit :** `${{ github.sha }}`
+            **Auteur :** `${{ github.actor }}`
+            Analyse statique du code source via scan-build.
