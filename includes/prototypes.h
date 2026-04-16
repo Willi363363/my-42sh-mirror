@@ -69,4 +69,5 @@ int redir_errors(ast_node_t *node, shell_parameters_t *shell);
 int redir_path_error(void);
 int heredoc_pipe_error(int *fd);
 int cod(shell_parameters_t *shell);
+void push_to_history(shell_parameters_t *shell);
 #endif /* PROTOTYPES_H_ */
