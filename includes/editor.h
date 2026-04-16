@@ -27,7 +27,13 @@ typedef struct editor_s {
 } editor_t;
 int editor_help(int code);
 int editor_version(int code);
+int check_if_file_is_here(file_infos_t *file_infos);
+int read_the_file(file_infos_t *file_infos);
+void free_it(file_infos_t *file_infos);
+char *ask_for_name(void);
+int create_new_file(char *name);
 int create_new_file_ask(void);
+void fill_new_file_infos(char *name, file_infos_t *file_infos);
 int window_loop(file_infos_t *file_infos);
 void shortcuts_checker(editor_t *editor, file_infos_t *file_infos);
 void write_in_file(file_infos_t *file_infos, char *new_content);

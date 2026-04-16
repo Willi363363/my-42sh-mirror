@@ -6,56 +6,38 @@
 */
 #include "global.h"
 
-static void fill_new_file_infos(char *name, file_infos_t *file_infos)
+int check_if_file_is_here(file_infos_t *file_infos)
 {
-    struct stat file_stat_new;
-
-    file_infos->file_stat = &file_stat_new;
-    file_infos->filepath = my_strdup(name);
-    file_infos->fd = open(name, O_RDONLY);
-    free(name);
-}
-
-static int create_new_file(char *name)
-{
-    char command[512];
-
-    sprintf(command, "touch %s", name);
-    if (system(command) == 0)
-        return SUCCESS;
-    return EXIT_FAIL;
-}
-
-void ask_confirm_loop(char *yes_or_no, int *confirm, size_t *name_max_size)
-{
-    while ((*confirm) == 0) {
-        printf("Do you want to create a new file? (y/n) : ");
-        getline(&yes_or_no, name_max_size, stdin);
-        yes_or_no[strcspn(yes_or_no, "\n")] = '\0';
-        printf("\n");
-        if (strcmp(yes_or_no, "y") != 0 && strcmp(yes_or_no, "n") != 0) {
-            printf("Answer y or n please...\n");
-            continue;
-        }
-        (*confirm) = 1;
-    }
-}
-
-int create_new_file_ask(void)
-{
-    char *yes_or_no = malloc(256 * sizeof(char));
-    size_t name_max_size = 256;
-    int confirm = 0;
-
-    if (!(yes_or_no)) {
-        printf("MALLOC FAILED, please try again...");
-        exit(EXIT_FAIL);
-    }
-    ask_confirm_loop(yes_or_no, &confirm, &name_max_size);
-    if (strcmp(yes_or_no, "n") == 0) {
-        free(yes_or_no);
+    if (stat(file_infos->filepath, file_infos->file_stat) == EXIT_FAIL)
         return EXIT_FAIL;
-    }
-    free(yes_or_no);
+    file_infos->fd = open(file_infos->filepath, O_RDONLY);
+    if (file_infos->fd == -1)
+        return EXIT_FAIL;
     return SUCCESS;
+}
+
+int read_the_file(file_infos_t *file_infos)
+{
+    file_infos->filecontent =
+        malloc((file_infos->file_stat->st_size + 1) * sizeof(char));
+    if (read(file_infos->fd, file_infos->filecontent,
+            file_infos->file_stat->st_size) == EXIT_FAIL)
+        return EXIT_FAIL;
+    file_infos->filecontent[file_infos->file_stat->st_size] = '\0';
+    return SUCCESS;
+}
+
+void free_it(file_infos_t *file_infos)
+{
+    if (file_infos->filecontent)
+        free(file_infos->filecontent);
+    if (file_infos->filepath)
+        free(file_infos->filepath);
+    if (file_infos->fd > 0)
+        close(file_infos->fd);
+}
+
+void fill_new_file_infos(char *name, file_infos_t *file_infos)
+{
+    file_infos->filepath = my_strdup(name);
 }
