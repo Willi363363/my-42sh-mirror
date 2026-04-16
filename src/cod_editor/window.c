@@ -50,9 +50,11 @@ static void saved_status(editor_t *editor)
 
 static void chars_watcher(editor_t *editor, file_infos_t *file_infos)
 {
-    if (editor->typed_ch >= 32 && editor->typed_ch <= 126 || editor->typed_ch == '\t' || editor->typed_ch == '\n') {
+    if (editor->typed_ch >= 32 && editor->typed_ch <= 126 ||
+        editor->typed_ch == '\t' || editor->typed_ch == '\n') {
         editor->len = strlen(file_infos->filecontent);
-        editor->tempo_realloc_test = realloc(file_infos->filecontent, editor->len + 2);
+        editor->tempo_realloc_test =
+            realloc(file_infos->filecontent, editor->len + 2);
         if (editor->tempo_realloc_test == NULL) {
             endwin();
             printf("REALLOC FAILED, try again...");
@@ -69,7 +71,8 @@ static void delete(editor_t *editor, file_infos_t *file_infos)
 {
     editor->len = strlen(file_infos->filecontent);
     if (editor->len > 0) {
-        editor->tempo_realloc_test = realloc(file_infos->filecontent, editor->len);
+        editor->tempo_realloc_test =
+            realloc(file_infos->filecontent, editor->len);
         if (editor->tempo_realloc_test == NULL) {
             endwin();
             printf("REALLOC FAILED, try again...");
@@ -95,7 +98,8 @@ int window_loop(file_infos_t *file_infos)
         saved_status(&editor);
         shortcuts_checker(&editor, file_infos);
         chars_watcher(&editor, file_infos);
-        if (editor.typed_ch == KEY_BACKSPACE || editor.typed_ch == 127 || editor.typed_ch == 8)
+        if (editor.typed_ch == KEY_BACKSPACE ||
+            editor.typed_ch == 127 || editor.typed_ch == 8)
             delete(&editor, file_infos);
     }
     endwin();

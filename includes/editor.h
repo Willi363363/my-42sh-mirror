@@ -30,4 +30,5 @@ int editor_version(int code);
 int create_new_file_ask(void);
 int window_loop(file_infos_t *file_infos);
 void shortcuts_checker(editor_t *editor, file_infos_t *file_infos);
+void write_in_file(file_infos_t *file_infos, char *new_content);
 #endif /* EDITOR_H_ */

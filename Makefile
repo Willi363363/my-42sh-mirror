@@ -9,6 +9,10 @@ SRC = 	$(shell find ./src -name "*.c")
 
 CC = epiclang
 
+CFLAGS = -Iincludes
+
+LDLIBS = -lncurses
+
 DEBUG_FLAGS = -g3 -Wall -Wextra
 
 OBJ = $(SRC:.c=.o)
@@ -18,13 +22,13 @@ NAME = 42sh
 all: $(NAME)
 
 $(NAME): $(OBJ)
-	$(CC) $(OBJ) -o $(NAME)
+	$(CC) $(OBJ) -o $(NAME) $(LDLIBS)
 
 %.o: %.c
-	$(CC) -c $< -o $@ -Iincludes -lncurses
+	$(CC) -c $< -o $@ $(CFLAGS)
 
 debug :
-	$(CC) $(DEBUG_FLAGS) $(SRC) -o $(NAME) -Iincludes -lncurses
+	$(CC) $(DEBUG_FLAGS) $(SRC) -o $(NAME) $(CFLAGS) $(LDLIBS)
 
 clean:
 	rm -f $(OBJ)
