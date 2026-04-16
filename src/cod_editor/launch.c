@@ -36,5 +36,9 @@ int cod(shell_parameters_t *shell)
     }
     if (strncmp(shell->command[1], "--", 2) == 0)
         return option_check(shell);
+    if (stat(shell->command[1], &file_stat) == -1)
+        // nouveau file
+    else
+        // ouvrir le fichier dans l'éditeur
     return COMMAND_FOUND;
 }

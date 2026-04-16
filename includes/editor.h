@@ -15,6 +15,16 @@ typedef struct file_infos_s {
     char *filecontent;
     int fd;
 } file_infos_t;
+typedef struct editor_s {
+    int is_running;
+    int typed_ch;
+    int len;
+    char *tempo_realloc_test;
+    int saved;
+    int cursor_x;
+    int cursor_y;
+    int current_index;
+} editor_t;
 int editor_help(int code);
 int editor_version(int code);
 int create_new_file_ask(void);
