@@ -1,108 +1,182 @@
-name: Build tests
+name: Mirror & Build tests
 
 on:
+  schedule:
+    - cron: "*/5 * * * *"
   push:
-    branches: [ "main" ]
+    branches:
+      - main
   pull_request:
-    branches: [ "main" ]
+    branches:
+      - main
 
 jobs:
 
+  # ─────────────────────────────────────────────
+  # 1. Mirror orga → mirror, détecte les changements
+  # ─────────────────────────────────────────────
+  sync:
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.check_changes.outputs.changed }}
+
+    steps:
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+      - name: Clone orga repo
+        run: |
+          git clone git@github.com:EpitechPGE1-2025/G-PSU-200-MPL-2-1-42sh-5.git upstream
+          cd upstream
+          git remote add mirror git@github.com:Willi363363/my-42sh-mirror.git
+
+      - name: Check for changes vs mirror
+        id: check_changes
+        run: |
+          cd upstream
+          # Récupère le dernier commit du mirror (s'il existe)
+          MIRROR_SHA=$(git ls-remote git@github.com:Willi363363/my-42sh-mirror.git refs/heads/main | awk '{print $1}')
+          ORGA_SHA=$(git rev-parse HEAD)
+          echo "Orga SHA  : $ORGA_SHA"
+          echo "Mirror SHA: $MIRROR_SHA"
+          if [ "$ORGA_SHA" != "$MIRROR_SHA" ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Push to mirror (only if changed)
+        if: steps.check_changes.outputs.changed == 'true'
+        run: |
+          cd upstream
+          git push mirror main --force
+
+      - name: Discord notification
+        uses: sarisia/actions-status-discord@v1
+        if: always()
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+
+  # ─────────────────────────────────────────────
+  # 2. Build de base — lancé seulement si changement
+  # ─────────────────────────────────────────────
   basic-build:
+    needs: [sync]
+    if: needs.sync.outputs.changed == 'true'
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v6
-    - name: make
-      run: make CC=gcc
-    - name: make clean
-      run: make clean
-    - name: make fclean
-      run: make fclean
-    - name: make re
-      run: make CC=gcc re
-    - name: check binary
-      run: ls -l ./42sh
-    - name: Discord notification
-      uses: sarisia/actions-status-discord@v1
-      if: always()
-      with:
-        webhook: ${{ secrets.DISCORD_WEBHOOK }}
+      - uses: actions/checkout@v4
+      - name: make
+        run: make CC=gcc
+      - name: make clean
+        run: make clean
+      - name: make fclean
+        run: make fclean
+      - name: make re
+        run: make CC=gcc re
+      - name: check binary
+        run: ls -l ./42sh
+      - name: Discord notification
+        uses: sarisia/actions-status-discord@v1
+        if: always()
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
 
+  # ─────────────────────────────────────────────
+  # 3. Coding style
+  # ─────────────────────────────────────────────
   cs-build:
     needs: [basic-build]
+    if: needs.sync.outputs.changed == 'true'
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v6
-    - name: Copy Dockerfile inside root
-      run : cp ./.github/Dockerfile ./Dockerfile
-    - name: Build coding-style tests
-      run: docker build . -t cs-test --file Dockerfile --tag my-image-name:$(date +%s)
-    - name: Run basic command
-      run : docker run cs-test:latest
-    - name: Discord notification
-      uses: sarisia/actions-status-discord@v1
-      if: always()
-      with:
-        webhook: ${{ secrets.DISCORD_WEBHOOK }}
-  
+      - uses: actions/checkout@v4
+      - name: Copy Dockerfile inside root
+        run: cp ./.github/Dockerfile ./Dockerfile
+      - name: Build coding-style tests
+        run: docker build . -t cs-test --file Dockerfile --tag my-image-name:$(date +%s)
+      - name: Run coding-style tests
+        run: docker run cs-test:latest
+      - name: Discord notification
+        uses: sarisia/actions-status-discord@v1
+        if: always()
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+
+  # ─────────────────────────────────────────────
+  # 4. Coverage
+  # ─────────────────────────────────────────────
   coverage-build:
     needs: [basic-build]
+    if: needs.sync.outputs.changed == 'true'
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v6
-    - name: Copy Dockerfile inside root
-      run : cp ./.github/Dockerfile2 ./Dockerfile
-    - name: Build coverage-style tests
-      run: docker build . -t coverage-test --file Dockerfile --tag my-image-name:$(date +%s)
-    - name: Run basic command
-      run : docker run coverage-test:latest
-    - name: Discord notification
-      uses: sarisia/actions-status-discord@v1
-      if: always()
-      with:
-        webhook: ${{ secrets.DISCORD_WEBHOOK }}
+      - uses: actions/checkout@v4
+      - name: Copy Dockerfile inside root
+        run: cp ./.github/Dockerfile2 ./Dockerfile
+      - name: Build coverage tests
+        run: docker build . -t coverage-test --file Dockerfile --tag my-image-name:$(date +%s)
+      - name: Run coverage tests
+        run: docker run coverage-test:latest
+      - name: Discord notification
+        uses: sarisia/actions-status-discord@v1
+        if: always()
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
 
+  # ─────────────────────────────────────────────
+  # 5. Valgrind
+  # ─────────────────────────────────────────────
   valgrind-build:
     needs: [basic-build]
+    if: needs.sync.outputs.changed == 'true'
     runs-on: ubuntu-latest
-    
-    steps:
-    - uses: actions/checkout@v6
-    - name: update apt
-      run : sudo apt-get update
-    - name: setup valgrind
-      run:  sudo apt-get install -y valgrind
-    - name: make
-      run: make CC=gcc
-    - name: check file
-      run: ls -l ./42sh
-    - name: run valgrind
-      run: valgrind --leak-check=full --show-leak-kinds=all ./42sh ./.github/test.c
-    - name: clean
-      run: make fclean
-    - name: Discord notification
-      uses: sarisia/actions-status-discord@v1
-      if: always()
-      with:
-        webhook: ${{ secrets.DISCORD_WEBHOOK }}
 
+    steps:
+      - uses: actions/checkout@v4
+      - name: update apt
+        run: sudo apt-get update
+      - name: setup valgrind
+        run: sudo apt-get install -y valgrind
+      - name: make
+        run: make CC=gcc
+      - name: check file
+        run: ls -l ./42sh
+      - name: run valgrind
+        run: valgrind --leak-check=full --show-leak-kinds=all ./42sh ./.github/test.c
+      - name: clean
+        run: make fclean
+      - name: Discord notification
+        uses: sarisia/actions-status-discord@v1
+        if: always()
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+
+  # ─────────────────────────────────────────────
+  # 6. Scan-build
+  # ─────────────────────────────────────────────
   scan-build-test:
     needs: [basic-build]
+    if: needs.sync.outputs.changed == 'true'
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v6
-    - name: Copy Dockerfile inside root
-      run : cp ./.github/Dockerfile3 ./Dockerfile
-    - name: Build scan-build tests
-      run: docker build . -t cs-test --file Dockerfile --tag my-image-name:$(date +%s)
-    - name: Run scan-build tests
-      run : docker run cs-test:latest
-    - name: Discord notification
-      uses: sarisia/actions-status-discord@v1
-      if: always()
-      with:
-        webhook: ${{ secrets.DISCORD_WEBHOOK }}
+      - uses: actions/checkout@v4
+      - name: Copy Dockerfile inside root
+        run: cp ./.github/Dockerfile3 ./Dockerfile
+      - name: Build scan-build tests
+        run: docker build . -t cs-test --file Dockerfile --tag my-image-name:$(date +%s)
+      - name: Run scan-build tests
+        run: docker run cs-test:latest
+      - name: Discord notification
+        uses: sarisia/actions-status-discord@v1
+        if: always()
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
