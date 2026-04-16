@@ -38,6 +38,14 @@ int cleanup_launcher(shell_parameters_t *shell)
     return SUCCESS;
 }
 
+static void check_status(shell_parameters_t *shell)
+{
+    if (shell->last_exit_code != 0)
+        my_putstr(" \033[1;31m$\033[0m> ");
+    else
+        my_putstr(" \033[1;32m$\033[0m> ");
+}
+
 int main_loop(shell_parameters_t *shell)
 {
     shell->line = NULL;
@@ -45,7 +53,7 @@ int main_loop(shell_parameters_t *shell)
     while (shell->status == RUNNING) {
         getcwd(shell->pwd, sizeof(shell->pwd));
         my_putstr(shell->pwd);
-        my_putstr(" $> ");
+        check_status(shell);
         shell->nread = getline(&shell->line, &shell->line_lenght, stdin);
         if (shell->nread == -1)
             break;

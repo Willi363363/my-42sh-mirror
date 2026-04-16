@@ -36,5 +36,11 @@ int cod(shell_parameters_t *shell)
     }
     if (strncmp(shell->command[1], "--", 2) == 0)
         return option_check(shell);
+    if (stat(shell->command[1], &file_stat) == -1)
+        return 33;
+    else
+        return 34;
+    if (window_loop(&file_infos) == EXIT_FAIL)
+        return COMMAND_ERROR;
     return COMMAND_FOUND;
 }

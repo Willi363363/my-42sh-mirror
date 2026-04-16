@@ -8,8 +8,12 @@
 SRC = 	$(shell find ./src -name "*.c")
 
 CC = epiclang
-CFLAGS = -Wall -Wextra -Iincludes
-DEBUG_FLAGS = -g3 $(CFLAGS)
+
+CFLAGS = -Iincludes
+
+LDLIBS = -lncurses
+
+DEBUG_FLAGS = -g3 -Wall -Wextra
 
 OBJ = $(SRC:.c=.o)
 NAME = 42sh
@@ -23,13 +27,13 @@ TESTS_LDFLAGS = -lcriterion --coverage
 all: $(NAME)
 
 $(NAME): $(OBJ)
-	$(CC) $(CFLAGS) $(OBJ) -o $@
+	$(CC) $(OBJ) -o $(NAME) $(LDLIBS)
 
 %.o: %.c
-	$(CC) -c $< -o $@ -Iincludes -lncurses
+	$(CC) -c $< -o $@ $(CFLAGS)
 
 debug :
-	$(CC) $(DEBUG_FLAGS) $(SRC) -o $(NAME) -Iincludes -lncurses
+	$(CC) $(DEBUG_FLAGS) $(SRC) -o $(NAME) $(CFLAGS) $(LDLIBS)
 
 clean:
 	rm -f $(OBJ) $(TESTS_OBJ)
