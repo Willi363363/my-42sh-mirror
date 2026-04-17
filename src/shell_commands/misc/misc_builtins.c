@@ -28,5 +28,8 @@ int misc_cmds_assert(char *line, shell_parameters_t *shell)
     if (my_strncmp(line, "cod", 3) == 0 &&
         (line[3] == '\n' || line[3] == '\0' || line[3] == ' '))
         return cod(shell);
+    if (my_strcmp(line, "history") == 0 &&
+        (line[7] == '\n' || line[7] == '\0' || line[7] == ' '))
+        return display_history(shell);
     return SUCCESS;
 }

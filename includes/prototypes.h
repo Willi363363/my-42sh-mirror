@@ -71,4 +71,5 @@ int heredoc_pipe_error(int *fd);
 int cod(shell_parameters_t *shell);
 void push_to_history(shell_parameters_t *shell);
 char *my_itoa(int nb);
+int display_history(shell_parameters_t *shell);
 #endif /* PROTOTYPES_H_ */
