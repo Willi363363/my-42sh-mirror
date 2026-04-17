@@ -9,8 +9,11 @@
 
 static char *build_full_path(char *dir, char *cmd)
 {
-    char *full_path = malloc(strlen(dir) + strlen(cmd) + 2);
+    char *full_path = NULL;
 
+    if (!dir || !cmd)
+        return NULL;
+    full_path = malloc(strlen(dir) + strlen(cmd) + 2);
     if (!full_path)
         return NULL;
     my_strcpy(full_path, dir);
@@ -23,6 +26,8 @@ static int is_builtin(char *cmd)
 {
     const char *builtins[] = {"cd", "exit", "echo", "history", "where", NULL};
 
+    if (!cmd)
+        return COMMAND_ERROR;
     for (int i = 0; builtins[i] != NULL; i++) {
         if (my_strcmp(cmd, builtins[i]) == 0) {
             return COMMAND_FOUND;
@@ -35,6 +40,8 @@ static void find_command_paths(shell_parameters_t *shell, int i)
 {
     char *full_path = NULL;
 
+    if (!shell || !shell->paths)
+        return;
     for (int j = 0; shell->paths[j] != NULL; j++) {
         full_path = build_full_path(shell->paths[j], shell->command[i]);
         if (access(full_path, X_OK) == 0) {

@@ -74,6 +74,8 @@ int main(int ac, char **av, char **env)
     shell_parameters_t shell = {RUNNING, NULL, {'\0'}, NULL, 0, 0, 0, -1,
         NULL, NULL, NULL, NULL};
 
+    if (ac > 1)
+        return EXIT_FAIL;
     shell.env = duplicate_env(env);
     create_paths(&shell);
     main_loop(&shell);
