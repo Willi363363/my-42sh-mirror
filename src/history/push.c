@@ -59,42 +59,46 @@ static char *build_cmd_string(shell_parameters_t *shell)
     return result;
 }
 
-static int ll_full_clean(char *old, char *cmd, char *line)
+static int ll_full_clean(char *old, char *cmd)
 {
-    if (old && strcmp(old, cmd) == 0) {
-        free(line);
-        free(old);
-        free(cmd);
+    if (old && cmd && strcmp(old, cmd) == 0)
         return 1;
+    return SUCCESS;
+}
+
+static int read_history_file(FILE *file, char **old, char **line, int *line_nb)
+{
+    size_t len = 0;
+
+    while (getline(line, &len, file) != -1) {
+        free(*old);
+        *old = my_strdup(*line);
+        (*line_nb)++;
     }
-    free(line);
-    free(old);
-    free(cmd);
     return SUCCESS;
 }
 
 static int check_history_ll(int fd, shell_parameters_t *shell, int *line_nb)
 {
     char *line = NULL;
-    size_t line_lenght = 0;
     char *old = NULL;
     char *cmd = build_cmd_string(shell);
     FILE *file = fopen("history", "r");
+    int ret = 0;
 
     if (!file || !cmd) {
+        if (file)
+            fclose(file);
         free(cmd);
         return EXIT_FAIL;
     }
-    while (getline(&line, &line_lenght, file) != -1) {
-        if (old)
-            free(old);
-        old = my_strdup(line);
-        (*line_nb)++;
-    }
+    read_history_file(file, &old, &line, line_nb);
     fclose(file);
-    if (ll_full_clean(old, cmd, line))
-        return 1;
-    return SUCCESS;
+    ret = ll_full_clean(old, cmd);
+    free(old);
+    free(cmd);
+    free(line);
+    return (ret == 1) ? 1 : SUCCESS;
 }
 
 void push_to_history(shell_parameters_t *shell)

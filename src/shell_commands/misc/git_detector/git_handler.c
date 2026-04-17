@@ -29,9 +29,15 @@ static int get_branch(git_detector_t *git_d)
 
 int git_check(shell_parameters_t *shell, char *dir_open)
 {
-    DIR *current = opendir(dir_open);
-    struct dirent *new = readdir(current);
+    DIR *current = NULL;
+    struct dirent *new = NULL;
 
+    if (dir_open == NULL)
+        return 0;
+    current = opendir(dir_open);
+    if (current == NULL)
+        return 0;
+    new = readdir(current);
     while (new != NULL) {
         if (my_strcmp(".git", new->d_name) == 0 && new->d_type == 4) {
             closedir(current);
@@ -43,24 +49,38 @@ int git_check(shell_parameters_t *shell, char *dir_open)
     return 0;
 }
 
+static char *build_truncated_dir(const char *dir, int found)
+{
+    char *new_dir = NULL;
+
+    if (!dir || !*dir || found <= 0)
+        return NULL;
+    new_dir = malloc((found + 2) * sizeof(char));
+    if (!new_dir)
+        return NULL;
+    for (int i = 0; i < found; i++)
+        new_dir[i] = dir[i];
+    new_dir[found] = '\0';
+    return new_dir;
+}
+
 static int build_next_rewind(char *dir)
 {
-    char *dir_cpy = my_strdup(dir);
+    char *new_dir = NULL;
     int found = -1;
 
-    if ((!dir) || (!dir_cpy))
+    if (!dir || !*dir)
         return EXIT_FAIL;
     for (int i = 0; dir[i] != '\0'; i++)
         if (dir[i] == '/')
             found = i;
-    if (found == -1)
+    if (found <= 0)
         return EXIT_FAIL;
-    free(dir);
-    dir = malloc(found * sizeof(char));
-    for (int i = 0; i < found; i++)
-        dir[i] = dir_cpy[i];
-    dir[found + 1] = '\0';
-    free(dir_cpy);
+    new_dir = build_truncated_dir(dir, found);
+    if (!new_dir)
+        return EXIT_FAIL;
+    my_strcpy(dir, new_dir);
+    free(new_dir);
     return SUCCESS;
 }
 
