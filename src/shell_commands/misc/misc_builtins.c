@@ -31,5 +31,8 @@ int misc_cmds_assert(char *line, shell_parameters_t *shell)
     if (my_strcmp(line, "history") == 0 &&
         (line[7] == '\n' || line[7] == '\0' || line[7] == ' '))
         return display_history(shell);
+    if (my_strcmp(line, "where") == 0 &&
+        (line[5] == '\n' || line[5] == '\0' || line[5] == ' '))
+        return where(shell);
     return SUCCESS;
 }
