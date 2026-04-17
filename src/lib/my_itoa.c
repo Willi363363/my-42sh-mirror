@@ -30,7 +30,7 @@ static void process_nb(int *nbr, int *size)
     (*size)++;
 }
 
-char *nb_to_str(int nb)
+char *my_itoa(int nb)
 {
     char *str;
     int size = 0;

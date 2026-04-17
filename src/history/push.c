@@ -10,7 +10,14 @@ static void write_full_cmd(shell_parameters_t *shell, int fd, int line_n)
 {
     char bck = '\n';
     char esp = ' ';
+    char *line_nb = my_itoa(line_n);
 
+    if (!line_nb)
+        return;
+    write(fd, line_nb, strlen(line_nb));
+    write(fd, &esp, 1);
+    write(fd, &esp, 1);
+    free(line_nb);
     for (int i = 0; shell->command[i] != NULL; i++) {
         write(fd, shell->command[i], strlen(shell->command[i]));
         if (shell->command[i + 1] != NULL)
@@ -49,7 +56,7 @@ static int ll_full_clean(char *old, char *cmd, char *line)
     return SUCCESS;
 }
 
-static int check_history_ll(int fd, shell_parameters_t *shell)
+static int check_history_ll(int fd, shell_parameters_t *shell, int *line_nb)
 {
     char *line = NULL;
     size_t line_lenght = 0;
@@ -65,6 +72,7 @@ static int check_history_ll(int fd, shell_parameters_t *shell)
         if (old)
             free(old);
         old = my_strdup(line);
+        (*line_nb)++;
     }
     fclose(file);
     if (ll_full_clean(old, cmd, line))
@@ -77,13 +85,13 @@ void push_to_history(shell_parameters_t *shell)
     int fd;
     struct stat s;
     int history_exists = 1;
-    int line_nb = 0;
+    int line_nb = 1;
 
     if (stat("history", &s) == -1)
         history_exists = 0;
     fd = open("history", O_WRONLY | O_CREAT | O_APPEND, 0644);
     if (history_exists &&
-        check_history_ll(fd, shell) != 0)
+        check_history_ll(fd, shell, &line_nb) != 0)
         return;
     write_full_cmd(shell, fd, line_nb);
     close(fd);
