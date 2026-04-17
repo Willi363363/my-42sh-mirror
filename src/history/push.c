@@ -6,6 +6,23 @@
 */
 #include "global.h"
 
+int display_history(shell_parameters_t *shell)
+{
+    FILE *h = fopen("history", "r");
+    char content[1024];
+
+    if (!h) {
+        my_putstr_error("History file not found.\n");
+        shell->last_exit_code = EXIT_FAIL;
+        return COMMAND_ERROR;
+    }
+    while (fgets(content, 1024, h) != NULL)
+        fprintf(stdout, "%s", content);
+    fclose(h);
+    shell->last_exit_code = SUCCESS;
+    return COMMAND_FOUND;
+}
+
 static void write_full_cmd(shell_parameters_t *shell, int fd, int line_n)
 {
     char bck = '\n';
