@@ -9,9 +9,13 @@
 static void write_full_cmd(shell_parameters_t *shell, int fd, int line_n)
 {
     char bck = '\n';
+    char esp = ' ';
 
-    for (int i = 0; shell->command[i] != NULL; i++)
+    for (int i = 0; shell->command[i] != NULL; i++) {
         write(fd, shell->command[i], strlen(shell->command[i]));
+        if (shell->command[i + 1] != NULL)
+            write(fd, &esp, 1);
+    }
     write(fd, &bck, 1);
 }
 
