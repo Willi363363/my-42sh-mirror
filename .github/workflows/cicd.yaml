@@ -23,7 +23,6 @@ jobs:
       - name: Check if triggered by bot
         id: check
         run: |
-          echo "Actor: ${{ github.actor }}"
           if [ "${{ github.actor }}" = "github-actions[bot]" ]; then
             echo "should_run=false" >> $GITHUB_OUTPUT
           else
@@ -170,56 +169,49 @@ jobs:
         run: docker run cs-test:latest
 
   # ─────────────────────────────────────────────
-  # 7. Notif Discord UNIQUE — résumé final
+  # 7. Notif Discord UNIQUE
+  #    Skippé si aucun changement détecté
   # ─────────────────────────────────────────────
   notify:
     needs: [guard, sync, basic-build, cs-build, coverage-build, valgrind-build, scan-build-test]
-    if: always() && needs.guard.outputs.should_run == 'true'
+    if: always() && needs.guard.outputs.should_run == 'true' && needs.sync.outputs.changed == 'true'
     runs-on: ubuntu-latest
+
+    env:
+      R_BUILD:  ${{ needs.basic-build.result }}
+      R_CS:     ${{ needs.cs-build.result }}
+      R_COV:    ${{ needs.coverage-build.result }}
+      R_VAL:    ${{ needs.valgrind-build.result }}
+      R_SCAN:   ${{ needs.scan-build-test.result }}
+      SHA:      ${{ github.sha }}
+      ACTOR:    ${{ github.actor }}
 
     steps:
       - name: Build summary
         id: summary
         run: |
-          if [ "${{ needs.sync.outputs.changed }}" != "true" ]; then
-            # Pas de changement — message court
-            echo "title=Aucun changement detecte" >> $GITHUB_OUTPUT
+          icon() { [ "$1" = "success" ] && echo "OK" || echo "FAIL"; }
 
-            # Heredoc pour la description (evite les erreurs de format)
-            {
-              echo "description<<EOF"
-              echo "Rien de nouveau sur le repo orga. Aucun test lance."
-              echo "EOF"
-            } >> $GITHUB_OUTPUT
-
+          if echo "$R_BUILD $R_CS $R_COV $R_VAL $R_SCAN" | grep -q "failure"; then
+            TITLE="ECHEC : des tests ont echoue"
           else
-            BUILD="${{ needs.basic-build.result }}"
-            CS="${{ needs.cs-build.result }}"
-            COV="${{ needs.coverage-build.result }}"
-            VAL="${{ needs.valgrind-build.result }}"
-            SCAN="${{ needs.scan-build-test.result }}"
-
-            icon() { [ "$1" = "success" ] && echo "OK" || echo "FAIL"; }
-
-            if [[ "$BUILD $CS $COV $VAL $SCAN" == *"failure"* ]]; then
-              echo "title=ECHEC : des tests ont echoue" >> $GITHUB_OUTPUT
-            else
-              echo "title=SUCCES : tous les tests sont passes" >> $GITHUB_OUTPUT
-            fi
-
-            {
-              echo "description<<EOF"
-              echo "Build de base  : $(icon $BUILD) $BUILD"
-              echo "Coding style   : $(icon $CS) $CS"
-              echo "Coverage       : $(icon $COV) $COV"
-              echo "Valgrind       : $(icon $VAL) $VAL"
-              echo "Scan-build     : $(icon $SCAN) $SCAN"
-              echo ""
-              echo "Commit : ${{ github.sha }}"
-              echo "Auteur : ${{ github.actor }}"
-              echo "EOF"
-            } >> $GITHUB_OUTPUT
+            TITLE="SUCCES : tous les tests sont passes"
           fi
+
+          echo "title=$TITLE" >> $GITHUB_OUTPUT
+
+          {
+            echo "description<<EOF"
+            echo "Build de base : $(icon $R_BUILD) $R_BUILD"
+            echo "Coding style  : $(icon $R_CS) $R_CS"
+            echo "Coverage      : $(icon $R_COV) $R_COV"
+            echo "Valgrind      : $(icon $R_VAL) $R_VAL"
+            echo "Scan-build    : $(icon $R_SCAN) $R_SCAN"
+            echo ""
+            echo "Commit : $SHA"
+            echo "Auteur : $ACTOR"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
 
       - name: Send Discord notification
         uses: sarisia/actions-status-discord@v1
@@ -227,5 +219,3 @@ jobs:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           title: ${{ steps.summary.outputs.title }}
           description: ${{ steps.summary.outputs.description }}
-
-
