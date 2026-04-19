@@ -98,9 +98,11 @@ int main_loop(shell_parameters_t *shell)
     shell->line = NULL;
     shell->line_lenght = 0;
     while (shell->status == RUNNING) {
-        getcwd(shell->pwd, sizeof(shell->pwd));
-        my_putstr(shell->pwd);
-        check_status(shell);
+        if (isatty(STDIN_FILENO)) {
+            getcwd(shell->pwd, sizeof(shell->pwd));
+            my_putstr(shell->pwd);
+            check_status(shell);
+        }
         if (process_input(shell) == EXIT_FAIL)
             break;
     }
@@ -117,7 +119,9 @@ int main(int ac, char **av, char **env)
     shell_parameters_t shell = {RUNNING, NULL, {'\0'}, NULL, 0, 0, 0, -1,
         NULL, NULL, NULL, NULL};
 
-    if (ac > 1)
+    if (ac > 2)
+        return EXIT_FAIL;
+    if (ac == 2 && freopen(av[1], "r", stdin) == NULL)
         return EXIT_FAIL;
     shell.env = duplicate_env(env);
     create_paths(&shell);
