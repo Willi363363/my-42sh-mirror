@@ -73,4 +73,5 @@ void push_to_history(shell_parameters_t *shell);
 char *my_itoa(int nb);
 int display_history(shell_parameters_t *shell);
 int where(shell_parameters_t *shell);
+int safe_dup2(int fd, int target);
 #endif /* PROTOTYPES_H_ */

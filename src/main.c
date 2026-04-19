@@ -46,26 +46,69 @@ static void check_status(shell_parameters_t *shell)
         my_putstr(" \033[1;32m$\033[0m> ");
 }
 
+static void free_command(char **cmd)
+{
+    if (!cmd)
+        return;
+    for (int i = 0; cmd[i]; i++)
+        free(cmd[i]);
+    free(cmd);
+}
+
+static void reset_input_buffer(shell_parameters_t *shell)
+{
+    free(shell->line);
+    shell->line = NULL;
+    shell->line_lenght = 0;
+}
+
+static void cleanup_parsed_command(shell_parameters_t *shell, char **parsed_cmd)
+{
+    my_safe_free((void **)&shell->command_real_path);
+    shell->command = NULL;
+    free_command(parsed_cmd);
+}
+
+static int process_input(shell_parameters_t *shell)
+{
+    char **parsed_cmd = NULL;
+
+    shell->nread = getline(&shell->line, &shell->line_lenght, stdin);
+    if (shell->nread == -1)
+        return EXIT_FAIL;
+    if (shell->nread > 0 && shell->line[shell->nread - 1] == '\n')
+        shell->line[shell->nread - 1] = '\0';
+    parsed_cmd = tokenize_formatter(shell);
+    if (!parsed_cmd) {
+        reset_input_buffer(shell);
+        return SUCCESS;
+    }
+    free_command(shell->command);
+    shell->command = parsed_cmd;
+    execute_ast(shell);
+    reset_input_buffer(shell);
+    cleanup_parsed_command(shell, parsed_cmd);
+    return SUCCESS;
+}
+
 int main_loop(shell_parameters_t *shell)
 {
+    if (!shell)
+        return EXIT_FAIL;
     shell->line = NULL;
     shell->line_lenght = 0;
     while (shell->status == RUNNING) {
         getcwd(shell->pwd, sizeof(shell->pwd));
         my_putstr(shell->pwd);
         check_status(shell);
-        shell->nread = getline(&shell->line, &shell->line_lenght, stdin);
-        if (shell->nread == -1)
+        if (process_input(shell) == EXIT_FAIL)
             break;
-        if (shell->nread > 0 && shell->line[shell->nread - 1] == '\n')
-            shell->line[shell->nread - 1] = '\0';
-        shell->command = tokenize_formatter(shell);
-        if (shell->command != NULL) {
-            execute_ast(shell);
-            push_to_history(shell);
-        }
-        clean_every_iteration(shell);
     }
+    free(shell->line);
+    shell->line = NULL;
+    if (shell->command)
+        free_command(shell->command);
+    shell->command = NULL;
     return cleanup_launcher(shell);
 }
 

@@ -46,10 +46,32 @@ void free_paths(shell_parameters_t *shell)
 
 void free_lexer(lexer_t **lexer)
 {
-    return;
+    if (!lexer)
+        return;
+    for (int i = 0; lexer[i] != NULL; i++) {
+        free(lexer[i]->value);
+        free(lexer[i]);
+    }
+    free(lexer);
+}
+
+static void free_ast_node(ast_node_t *ast)
+{
+    if (!ast)
+        return;
+    free_ast_node(ast->left);
+    free_ast_node(ast->right);
+    if (ast->args != NULL) {
+        for (int i = 0; ast->args[i] != NULL; i++)
+            free(ast->args[i]);
+        free(ast->args);
+    }
+    free(ast->input_file);
+    free(ast->output_file);
+    free(ast);
 }
 
 void free_ast(ast_node_t *ast)
 {
-    return;
+    free_ast_node(ast);
 }

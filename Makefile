@@ -47,4 +47,7 @@ re: fclean all
 unit_tests: $(TESTS_OBJ)
 	$(CC) $(TESTS_OBJ) -o $(TESTS) $(TESTS_LDFLAGS)
 
+sanity_check:
+	scan-build --status-bugs -disable-checker unix.Malloc make re;
+
 .PHONY: all clean fclean re debug tests_run tests_clean tests_re

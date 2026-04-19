@@ -74,19 +74,31 @@ static void *empty_lexer(lexer_t **lexer, int i)
     return NULL;
 }
 
+static lexer_t **free_lexer_array(lexer_t **lexer, int count)
+{
+    for (int i = 0; i < count; i++) {
+        free(lexer[i]->value);
+        free(lexer[i]);
+    }
+    free(lexer);
+    return NULL;
+}
+
 lexer_t **apply_lexer(shell_parameters_t *shell)
 {
-    lexer_t **lexer =
-        malloc((my_tablen(shell->command) + 1) * sizeof(lexer_t *));
+    int len = my_tablen(shell->command);
+    lexer_t **lexer = malloc((len + 1) * sizeof(lexer_t *));
     int i = 0;
 
     if (!lexer)
         return NULL;
-    for (; shell->command[i] != NULL; i++) {
+    for (; i < len; i++) {
         lexer[i] = malloc(sizeof(lexer_t));
         if (!lexer[i])
-            return empty_lexer(lexer, i);
+            return free_lexer_array(lexer, i);
         lexer[i]->value = my_strdup(shell->command[i]);
+        if (!lexer[i]->value)
+            return free_lexer_array(lexer, i + 1);
         list_checker_1(lexer[i], shell->command[i]);
     }
     lexer[i] = NULL;

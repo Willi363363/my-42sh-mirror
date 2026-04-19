@@ -169,6 +169,7 @@ int execute_ast(shell_parameters_t *shell)
         return EXIT_FAIL;
     found = apply_parser(&ast, lexer);
     result = run_ast(ast, shell);
+    push_to_history(shell);
     free_lexer(lexer);
     free_ast(ast);
     if (found != SUCCESS)

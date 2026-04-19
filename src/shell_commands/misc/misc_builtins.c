@@ -18,9 +18,10 @@ int misc_cmds_assert(char *line, shell_parameters_t *shell)
 {
     if (shell->command_found == SUCCESS)
         return SUCCESS;
-    if (my_strcmp(line, "exit\n") == 0) {
-        clean_and_exit(shell);
-        exit(SUCCESS);
+    if (my_strcmp(line, "exit") == 0) {
+        shell->status = 0;
+        shell->last_exit_code = SUCCESS;
+        return COMMAND_FOUND;
     }
     if (my_strncmp(line, "echo $?", 7) == 0 &&
         (line[7] == '\n' || line[7] == '\0'))
