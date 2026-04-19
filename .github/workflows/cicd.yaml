@@ -3,6 +3,8 @@ name: Mirror & Build tests
 on:
   schedule:
     - cron: "*/5 * * * *"
+  push:
+
 
 jobs:
 
