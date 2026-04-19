@@ -143,7 +143,8 @@ jobs:
       - name: check file
         run: ls -l ./42sh
       - name: run valgrind
-        run: valgrind --leak-check=full --show-leak-kinds=all ./42sh < ./.github/test.c
+        run: |
+          printf "exit\n" | valgrind --leak-check=full --show-leak-kinds=all ./42sh
       - name: clean
         run: make fclean
 
