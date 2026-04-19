@@ -50,7 +50,7 @@ static void saved_status(editor_t *editor)
 
 static void chars_watcher(editor_t *editor, file_infos_t *file_infos)
 {
-    if (editor->typed_ch >= 32 && editor->typed_ch <= 126 ||
+    if ((editor->typed_ch >= 32 && editor->typed_ch <= 126) ||
         editor->typed_ch == '\t' || editor->typed_ch == '\n') {
         editor->len = strlen(file_infos->filecontent);
         editor->tempo_realloc_test =

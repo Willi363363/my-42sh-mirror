@@ -70,16 +70,19 @@ static int detect_normal(char *str, int *i, int *wsize)
     return 1;
 }
 
-static void copy_word(char **res, int res_i, char *src, int wsize)
+static char *copy_word(char *src, int start_pos, int wsize)
 {
+    char *word = malloc((wsize + 1) * sizeof(char));
     int a = 0;
 
-    res[res_i] = malloc((wsize + 1) * sizeof(char));
+    if (word == NULL)
+        return NULL;
     while (a < wsize) {
-        res[res_i][a] = src[a];
+        word[a] = src[start_pos + a];
         a++;
     }
-    res[res_i][wsize] = '\0';
+    word[wsize] = '\0';
+    return word;
 }
 
 static int process_word(char *str, int i, int *start, int *wsize)
@@ -102,20 +105,33 @@ static int process_word(char *str, int i, int *start, int *wsize)
     return i;
 }
 
-static void array_builder(char *str, int i, char **res, int res_i)
+static void free_word_array(char **res, int filled)
 {
+    for (int i = 0; i < filled; i++)
+        free(res[i]);
+    free(res);
+}
+
+static int array_builder(char *str, char **res)
+{
+    int i = 0;
+    int res_i = 0;
     int wsize = 0;
     int start_pos = 0;
 
-    while (str[i] == ' ' || str[i] == '\t')
-        i++;
-    if (str[i] == '\0')
-        return;
-    i = process_word(str, i, &start_pos, &wsize);
-    copy_word(res, res_i, str + start_pos, wsize);
-    while (str[i] == ' ')
-        i++;
-    array_builder(str, i, res, res_i + 1);
+    while (str[i] != '\0') {
+        for (; str[i] == ' ' || str[i] == '\t'; i++);
+        if (str[i] == '\0')
+            break;
+        i = process_word(str, i, &start_pos, &wsize);
+        res[res_i] = copy_word(str, start_pos, wsize);
+        if (res[res_i] == NULL) {
+            free_word_array(res, res_i);
+            return 0;
+        }
+        res_i++;
+    }
+    return 1;
 }
 
 char **tokenize_formatter(shell_parameters_t *shell)
@@ -123,15 +139,16 @@ char **tokenize_formatter(shell_parameters_t *shell)
     int count = 0;
     char **result = NULL;
 
-    if (shell->line == NULL)
+    if (shell == NULL || shell->line == NULL)
         return NULL;
     count = words_counter(shell->line, 0);
     if (count == 0)
         return NULL;
     result = malloc((count + 1) * sizeof(char *));
-    result[count] = NULL;
-    if (!result)
+    if (result == NULL)
         return NULL;
-    array_builder(shell->line, 0, result, 0);
+    result[count] = NULL;
+    if (!array_builder(shell->line, result))
+        return NULL;
     return result;
 }

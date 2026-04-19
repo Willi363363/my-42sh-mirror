@@ -62,13 +62,6 @@ static void reset_input_buffer(shell_parameters_t *shell)
     shell->line_lenght = 0;
 }
 
-static void cleanup_parsed_command(shell_parameters_t *shell, char **parsed_cmd)
-{
-    my_safe_free((void **)&shell->command_real_path);
-    shell->command = NULL;
-    free_command(parsed_cmd);
-}
-
 static int process_input(shell_parameters_t *shell)
 {
     char **parsed_cmd = NULL;

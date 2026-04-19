@@ -32,6 +32,7 @@ int git_check(shell_parameters_t *shell, char *dir_open)
     DIR *current = NULL;
     struct dirent *new = NULL;
 
+    (void)shell;
     if (dir_open == NULL)
         return 0;
     current = opendir(dir_open);

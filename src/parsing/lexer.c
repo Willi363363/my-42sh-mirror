@@ -61,19 +61,6 @@ static void list_checker_1(lexer_t *current, char *analyze_me)
     list_checker_2(current, analyze_me);
 }
 
-static void *empty_lexer(lexer_t **lexer, int i)
-{
-    if (i == 0)
-        return NULL;
-    else
-        i--;
-    for (; i >= 0; i--) {
-        my_safe_free((void **)lexer[i]->value);
-        my_safe_free((void **)lexer[i]);
-    }
-    return NULL;
-}
-
 static lexer_t **free_lexer_array(lexer_t **lexer, int count)
 {
     for (int i = 0; i < count; i++) {

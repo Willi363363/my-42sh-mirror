@@ -40,63 +40,80 @@ static int words_counter(char *str, int i)
 
 static int detect_if_quoted(char *str, int *i, int *wsize)
 {
-    while (str[(*i)] != '"' && str[(*i)] != '\0') {
+    while (str[*i] != '"' && str[*i] != '\0') {
         (*wsize)++;
         (*i)++;
     }
-    if (str[(*i)] == '"')
+    if (str[*i] == '"')
         (*i)++;
     return 1;
 }
 
 static int detect_normal(char *str, int *i, int *wsize)
 {
-    while (str[(*i)] != ' ' && str[(*i)] != '\0' && str[(*i)] != '\t') {
+    while (str[*i] != ' ' && str[*i] != '\0' && str[*i] != '\t') {
         (*wsize)++;
         (*i)++;
     }
     return 1;
 }
 
-static void copy_word(char **res, int res_i, char *src, int wsize)
-{
-    int a = 0;
-
-    res[res_i] = malloc((wsize + 1) * sizeof(char));
-    while (a < wsize) {
-        res[res_i][a] = src[a];
-        a++;
-    }
-    res[res_i][wsize] = '\0';
-}
-
 static int process_word(char *str, int i, int *start, int *wsize)
 {
     if (str[i] == '"') {
-        (*start) = i + 1;
+        *start = i + 1;
         i++;
         detect_if_quoted(str, &i, wsize);
     } else {
-        (*start) = i;
+        *start = i;
         detect_normal(str, &i, wsize);
     }
     return i;
 }
 
-static void array_builder(char *str, int i, char **res, int res_i)
+static char *copy_word(char *src, int start_pos, int wsize)
 {
+    char *word = malloc((wsize + 1) * sizeof(char));
+    int a = 0;
+
+    if (word == NULL)
+        return NULL;
+    while (a < wsize) {
+        word[a] = src[start_pos + a];
+        a++;
+    }
+    word[wsize] = '\0';
+    return word;
+}
+
+static void free_word_array(char **res, int filled)
+{
+    for (int i = 0; i < filled; i++)
+        free(res[i]);
+    free(res);
+}
+
+static int array_builder(char *str, char **res)
+{
+    int i = 0;
+    int res_i = 0;
     int wsize = 0;
     int start_pos = 0;
 
-    while (str[i] == ' ' || str[i] == '\t')
-        i++;
-    if (str[i] == '\0')
-        return;
-    i = process_word(str, i, &start_pos, &wsize);
-    copy_word(res, res_i, str + start_pos, wsize);
-    while (str[i] == ' ')
-        i++;
-    array_builder(str, i, res, res_i + 1);
+    while (str[i] != '\0') {
+        for (; str[i] == ' ' || str[i] == '\t'; i++);
+        if (str[i] == '\0')
+            break;
+        i = process_word(str, i, &start_pos, &wsize);
+        res[res_i] = copy_word(str, start_pos, wsize);
+        if (res[res_i] == NULL) {
+            free_word_array(res, res_i);
+            return 0;
+        }
+        res_i++;
+        for (; str[i] == ' '; i++);
+    }
+    return 1;
 }
 
 char **my_str_to_word_array(char *str)
@@ -110,9 +127,10 @@ char **my_str_to_word_array(char *str)
     if (count == 0)
         return NULL;
     result = malloc((count + 1) * sizeof(char *));
-    result[count] = NULL;
-    if (!result)
+    if (result == NULL)
         return NULL;
-    array_builder(str, 0, result, 0);
+    result[count] = NULL;
+    if (!array_builder(str, result))
+        return NULL;
     return result;
 }

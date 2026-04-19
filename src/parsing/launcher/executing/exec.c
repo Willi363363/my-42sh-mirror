@@ -145,5 +145,7 @@ int exec_redir_heredoc(ast_node_t *node, shell_parameters_t *shell)
 
 int exec_subshell(ast_node_t *node, shell_parameters_t *shell)
 {
+    (void)node;
+    (void)shell;
     return SUCCESS;
 }

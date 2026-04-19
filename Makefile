@@ -9,11 +9,11 @@ SRC = 	$(shell find ./src -name "*.c")
 
 CC = epiclang
 
-CFLAGS = -Iincludes
+CFLAGS = -Iincludes -Wall -Wextra -W
 
 LDLIBS = -lncurses
 
-DEBUG_FLAGS = -g3 -Wall -Wextra
+DEBUG_FLAGS = -g3
 
 OBJ = $(SRC:.c=.o)
 NAME = 42sh

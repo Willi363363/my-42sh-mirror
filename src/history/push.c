@@ -89,6 +89,7 @@ static int check_history_ll(int fd, shell_parameters_t *shell, int *line_nb)
     if (!file || !cmd) {
         if (file)
             fclose(file);
+        (void)fd;
         free(cmd);
         return EXIT_FAIL;
     }
