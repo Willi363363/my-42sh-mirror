@@ -64,20 +64,17 @@ static void reset_input_buffer(shell_parameters_t *shell)
 
 static int process_input(shell_parameters_t *shell)
 {
-    char **parsed_cmd = NULL;
-
     shell->nread = getline(&shell->line, &shell->line_lenght, stdin);
     if (shell->nread == -1)
         return EXIT_FAIL;
     if (shell->nread > 0 && shell->line[shell->nread - 1] == '\n')
         shell->line[shell->nread - 1] = '\0';
-    parsed_cmd = tokenize_formatter(shell);
-    if (!parsed_cmd) {
+    free_command(shell->command);
+    shell->command = tokenize_formatter(shell);
+    if (!shell->command) {
         reset_input_buffer(shell);
         return SUCCESS;
     }
-    free_command(shell->command);
-    shell->command = parsed_cmd;
     execute_ast(shell);
     reset_input_buffer(shell);
     my_safe_free((void **)&shell->command_real_path);
