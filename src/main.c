@@ -81,8 +81,8 @@ static int process_input(shell_parameters_t *shell)
     execute_ast(shell);
     reset_input_buffer(shell);
     my_safe_free((void **)&shell->command_real_path);
+    free_command(shell->command);
     shell->command = NULL;
-    free_command(parsed_cmd);
     return SUCCESS;
 }
 

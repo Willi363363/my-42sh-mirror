@@ -8,10 +8,12 @@
 
 int exec_command(ast_node_t *node, shell_parameters_t *shell)
 {
+    char **saved_cmd = shell->command;
     int found = 0;
 
     shell->command = node->args;
     found = commands_launcher(shell);
+    shell->command = saved_cmd;
     return found;
 }
 
