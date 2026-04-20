@@ -120,6 +120,7 @@ static int array_builder(char *str, char **res)
     int start_pos = 0;
 
     while (str[i] != '\0') {
+        wsize = 0;
         for (; str[i] == ' ' || str[i] == '\t'; i++);
         if (str[i] == '\0')
             break;
@@ -144,10 +145,9 @@ char **tokenize_formatter(shell_parameters_t *shell)
     count = words_counter(shell->line, 0);
     if (count == 0)
         return NULL;
-    result = malloc((count + 1) * sizeof(char *));
+    result = calloc((count + 1), sizeof(char *));
     if (result == NULL)
         return NULL;
-    result[count] = NULL;
     if (!array_builder(shell->line, result))
         return NULL;
     return result;
