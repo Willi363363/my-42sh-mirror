@@ -14,6 +14,16 @@ static int echo_last_exit_status(shell_parameters_t *shell)
     return COMMAND_FOUND;
 }
 
+static int has_command_suffix(char *line, int index)
+{
+    return line[index] == '\n' || line[index] == '\0' || line[index] == ' ';
+}
+
+static int is_command(char *line, char *command)
+{
+    return my_strcmp(line, command) == 0;
+}
+
 int misc_cmds_assert(char *line, shell_parameters_t *shell)
 {
     if (shell->command_found == SUCCESS)
@@ -27,13 +37,13 @@ int misc_cmds_assert(char *line, shell_parameters_t *shell)
         (line[7] == '\n' || line[7] == '\0'))
         return echo_last_exit_status(shell);
     if (my_strncmp(line, "cod", 3) == 0 &&
-        (line[3] == '\n' || line[3] == '\0' || line[3] == ' '))
+        has_command_suffix(line, 3))
         return cod(shell);
-    if (my_strcmp(line, "history") == 0 &&
-        (line[7] == '\n' || line[7] == '\0' || line[7] == ' '))
+    if (is_command(line, "history") && has_command_suffix(line, 7))
         return display_history(shell);
-    if (my_strcmp(line, "where") == 0 &&
-        (line[5] == '\n' || line[5] == '\0' || line[5] == ' '))
+    if (is_command(line, "where") && has_command_suffix(line, 5))
         return where(shell);
+    if (is_command(line, "which") && has_command_suffix(line, 5))
+        return which(shell);
     return SUCCESS;
 }

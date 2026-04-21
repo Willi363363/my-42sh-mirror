@@ -36,20 +36,58 @@ static int is_builtin(char *cmd)
     return COMMAND_ERROR;
 }
 
-static void find_command_paths(shell_parameters_t *shell, int i)
+static int find_command_paths(shell_parameters_t *shell, int i)
 {
     char *full_path = NULL;
+    int found = 0;
 
     if (!shell || !shell->paths)
-        return;
+        return 0;
     for (int j = 0; shell->paths[j] != NULL; j++) {
         full_path = build_full_path(shell->paths[j], shell->command[i]);
-        if (access(full_path, X_OK) == 0) {
+        if (full_path != NULL && access(full_path, X_OK) == 0) {
             my_putstr(full_path);
             my_putstr("\n");
+            found = 1;
         }
         free(full_path);
     }
+    return found;
+}
+
+static void print_where_builtin(char *command)
+{
+    my_putstr(command);
+    my_putstr(" is a shell built-in\n");
+}
+
+static void print_where_not_found(shell_parameters_t *shell, char *command)
+{
+    my_putstr(command);
+    my_putstr(": Command not found.\n");
+    shell->last_exit_code = 1;
+}
+
+static int where_too_few_arguments(shell_parameters_t *shell)
+{
+    if (my_putstr("where: Too few arguments.\n") == -1)
+        return COMMAND_ERROR;
+    shell->last_exit_code = 1;
+    return COMMAND_ERROR;
+}
+
+static void process_where_command(shell_parameters_t *shell, int i)
+{
+    int found = 0;
+
+    if (is_builtin(shell->command[i]) == COMMAND_FOUND) {
+        print_where_builtin(shell->command[i]);
+        found = 1;
+    }
+    if (find_command_paths(shell, i) == 1)
+        found = 1;
+    if (found == 0)
+        print_where_not_found(shell, shell->command[i]);
 }
 
 int where(shell_parameters_t *shell)
@@ -57,18 +95,11 @@ int where(shell_parameters_t *shell)
     if (!shell)
         return COMMAND_ERROR;
     if (shell->command[1] == NULL) {
-        if (my_putstr("where: Too few arguments.\n") == -1) {
-            return COMMAND_ERROR;
-        }
-        shell->last_exit_code = RUNNING;
-        return COMMAND_ERROR;
+        return where_too_few_arguments(shell);
     }
+    shell->last_exit_code = 0;
     for (int i = 1; shell->command[i] != NULL; i++) {
-        if (is_builtin(shell->command[i]) == COMMAND_FOUND) {
-            my_putstr(shell->command[i]);
-            my_putstr(" is a shell built-in\n");
-        }
-        find_command_paths(shell, i);
+        process_where_command(shell, i);
     }
     return COMMAND_FOUND;
 }

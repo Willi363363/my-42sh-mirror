@@ -74,4 +74,5 @@ char *my_itoa(int nb);
 int display_history(shell_parameters_t *shell);
 int where(shell_parameters_t *shell);
 int safe_dup2(int fd, int target);
+int which(shell_parameters_t *shell);
 #endif /* PROTOTYPES_H_ */
