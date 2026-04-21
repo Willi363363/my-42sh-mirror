@@ -75,4 +75,5 @@ int display_history(shell_parameters_t *shell);
 int where(shell_parameters_t *shell);
 int safe_dup2(int fd, int target);
 int which(shell_parameters_t *shell);
+int repeat_command(shell_parameters_t *shell, char **args);
 #endif /* PROTOTYPES_H_ */
