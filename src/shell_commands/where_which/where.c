@@ -24,7 +24,8 @@ static char *build_full_path(char *dir, char *cmd)
 
 static int is_builtin(char *cmd)
 {
-    const char *builtins[] = {"cd", "exit", "echo", "history", "where", NULL};
+    const char *builtins[] = {"cd", "exit", "echo", "history", "where",
+        "repeat", NULL};
 
     if (!cmd)
         return COMMAND_ERROR;

@@ -41,10 +41,41 @@ static void print_which_path(char *path)
     my_putchar('\n');
 }
 
-int which(shell_parameters_t *shell)
+static int is_builtin(char *cmd)
+{
+    const char *builtins[] = {"cd", "exit", "echo", "history", "where",
+        "repeat", NULL};
+
+    if (!cmd)
+        return COMMAND_ERROR;
+    for (int i = 0; builtins[i] != NULL; i++) {
+        if (my_strcmp(cmd, builtins[i]) == 0) {
+            return COMMAND_FOUND;
+        }
+    }
+    return COMMAND_ERROR;
+}
+
+static int which_command(shell_parameters_t *shell, int i)
 {
     char *cmd_path = NULL;
 
+    if (is_builtin(shell->command[i]) == COMMAND_FOUND) {
+        my_putstr(shell->command[i]);
+        my_putstr(":  shell built-in command.\n");
+    } else {
+        cmd_path = get_command_path(shell, shell->command[i]);
+        if (cmd_path != NULL)
+            print_which_path(cmd_path);
+        else
+            print_which_not_found(shell, shell->command[i]);
+        free(cmd_path);
+    }
+    return COMMAND_FOUND;
+}
+
+int which(shell_parameters_t *shell)
+{
     if (!shell)
         return COMMAND_ERROR;
     if (shell->command[1] == NULL) {
@@ -54,12 +85,9 @@ int which(shell_parameters_t *shell)
     }
     shell->last_exit_code = 0;
     for (size_t i = 1; shell->command[i] != NULL; i++) {
-        cmd_path = get_command_path(shell, shell->command[i]);
-        if (cmd_path != NULL)
-            print_which_path(cmd_path);
-        else
-            print_which_not_found(shell, shell->command[i]);
-        free(cmd_path);
+        if (which_command(shell, i) == COMMAND_ERROR) {
+            return COMMAND_ERROR;
+        }
     }
     return COMMAND_FOUND;
 }
