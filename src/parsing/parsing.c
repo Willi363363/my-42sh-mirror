@@ -16,6 +16,11 @@ static ast_node_t *init_ast_node(void)
     return new;
 }
 
+static int is_cmd_arg_token(lexer_id_t type)
+{
+    return type == TOKEN_WORD || type == TOKEN_ENV_VAR;
+}
+
 static void check_redirect(int *pos, lexer_t **lexer, ast_node_t *new)
 {
     switch (lexer[(*pos)]->type) {
@@ -41,11 +46,11 @@ static void create_full_word(int *pos, lexer_t **lexer, ast_node_t *new)
     char **args = NULL;
 
     for (; lexer[pos_copy] != NULL &&
-        lexer[pos_copy]->type == TOKEN_WORD; pos_copy++)
+        is_cmd_arg_token(lexer[pos_copy]->type); pos_copy++)
         count++;
     args = malloc((count + 1) * sizeof(char *));
     for (int i = 0; lexer[(*pos)] != NULL &&
-        lexer[(*pos)]->type == TOKEN_WORD; (*pos)++) {
+        is_cmd_arg_token(lexer[(*pos)]->type); (*pos)++) {
         args[i] = my_strdup(lexer[(*pos)]->value);
         i++;
     }
@@ -67,7 +72,7 @@ static ast_node_t *parse_primary(int *pos, lexer_t **lexer)
             (*pos)++;
         return new;
     }
-    if (lexer[*pos]->type == TOKEN_WORD) {
+    if (is_cmd_arg_token(lexer[*pos]->type)) {
         new = init_ast_node();
         if (!new)
             return NULL;
@@ -168,6 +173,7 @@ int execute_ast(shell_parameters_t *shell)
     if (!lexer)
         return EXIT_FAIL;
     found = apply_parser(&ast, lexer);
+    expand_ast_env(ast, shell);
     result = run_ast(ast, shell);
     push_to_history(shell);
     free_lexer(lexer);

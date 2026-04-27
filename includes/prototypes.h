@@ -53,6 +53,7 @@ lexer_t **apply_lexer(shell_parameters_t *shell);
 char **tokenize_formatter(shell_parameters_t *shell);
 int detect_operators(char *str, int *i);
 ast_node_t *parse_list(int *pos, lexer_t **lexer);
+void expand_ast_env(ast_node_t *node, shell_parameters_t *shell);
 int run_ast(ast_node_t *node, shell_parameters_t *shell);
 int exec_command(ast_node_t *node, shell_parameters_t *shell);
 int exec_pipe(ast_node_t *node, shell_parameters_t *shell);

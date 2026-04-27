@@ -8,6 +8,10 @@
 
 static void list_checker_3(lexer_t *current, char *analyze_me)
 {
+    if (analyze_me[0] == '$' && my_strcmp(analyze_me, "$?") != 0) {
+        current->type = TOKEN_ENV_VAR;
+        return;
+    }
     if (my_strcmp(analyze_me, "(") == 0) {
         current->type = TOKEN_LPAREN;
         return;
