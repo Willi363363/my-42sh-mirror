@@ -33,6 +33,7 @@ typedef struct ast_node_s {
 
 typedef enum {
     TOKEN_WORD,
+    TOKEN_ENV_VAR,
     TOKEN_PIPE,
     TOKEN_AND,
     TOKEN_OR,
