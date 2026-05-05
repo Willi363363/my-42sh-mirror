@@ -4,6 +4,13 @@
 ** File description:
 ** This file launch the cod editor.
 */
+#include <fcntl.h>
+#include <ncurses.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include "cod_editor.h"
 #include "global.h"
 
 void write_in_file(file_infos_t *file_infos, char *new_content)
@@ -98,8 +105,8 @@ int window_loop(file_infos_t *file_infos)
         saved_status(&editor);
         shortcuts_checker(&editor, file_infos);
         chars_watcher(&editor, file_infos);
-        if (editor.typed_ch == KEY_BACKSPACE ||
-            editor.typed_ch == 127 || editor.typed_ch == 8)
+        if (editor.typed_ch == KEY_BACKSPACE || editor.typed_ch == 127 ||
+            editor.typed_ch == 8)
             delete(&editor, file_infos);
     }
     endwin();

@@ -4,7 +4,7 @@
 ** File description:
 ** This file contains all the shortcuts of the cod editor.
 */
-#include "global.h"
+#include "cod_editor.h"
 
 void shortcuts_checker(editor_t *editor, file_infos_t *file_infos)
 {

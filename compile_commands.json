@@ -1,0 +1,20 @@
+[
+  {
+    "file": "*.c",
+    "arguments": [
+      "/usr/local/bin/clang",
+      "-fplugin=/usr/lib/epiclang/plugins/epiclang-plugin-banana.so",
+      "-c",
+      "*.c",
+      "-o",
+      "*.o",
+      "-Iinclude",
+      "-D_XOPEN_SOURCE_EXTENDED",
+      "-Wall",
+      "-Wextra",
+      "-W"
+    ],
+    "directory": "/home/geod/Epitech/42sh",
+    "output": "*.o"
+  }
+]
