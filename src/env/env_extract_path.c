@@ -27,9 +27,13 @@ static void tokenise_path(char *line, shell_parameters_t *shell)
     int path_count = count_paths(line_copy);
     int i = 0;
 
-    shell->paths = malloc((path_count + 1) * sizeof(char *));
-    if (shell->paths == NULL)
+    if (line_copy == NULL)
         return;
+    shell->paths = malloc((path_count + 1) * sizeof(char *));
+    if (shell->paths == NULL) {
+        free(line_copy);
+        return;
+    }
     tempo = strtok(line_copy, ":");
     while (tempo != NULL) {
         shell->paths[i] = strdup(tempo);

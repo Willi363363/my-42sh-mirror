@@ -8,17 +8,11 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include "env.h"
-#include "execution.h"
 #include "global.h"
 #include "lexer.h"
+#include "parsing.h"
 #include "shell.h"
 #include "utils.h"
-
-int cleanup_launcher(shell_parameters_t *shell)
-{
-    shell_clean(shell);
-    return SUCCESS;
-}
 
 static void check_status(shell_parameters_t *shell)
 {
@@ -28,40 +22,47 @@ static void check_status(shell_parameters_t *shell)
         printf(" \033[1;32m$\033[0m> ");
 }
 
-static void free_command(char **cmd)
+static void free_command(shell_parameters_t *shell)
 {
-    if (!cmd)
+    if (!shell->command)
         return;
-    for (int i = 0; cmd[i]; i++)
-        free(cmd[i]);
-    free(cmd);
+    for (int i = 0; shell->command[i]; i++)
+        free(shell->command[i]);
+    free(shell->command);
+    shell->command = NULL;
 }
 
-static void reset_input_buffer(shell_parameters_t *shell)
+static int reset_input_buffer(shell_parameters_t *shell, char *line_backup)
 {
-    free(shell->line);
+    if (line_backup)
+        free(line_backup);
+    else if (shell->line)
+        free(shell->line);
     shell->line = NULL;
     shell->line_lenght = 0;
+    return SUCCESS;
 }
 
 static int process_input(shell_parameters_t *shell)
 {
+    char *line_backup = NULL;
+
+    free_command(shell);
     shell->nread = getline(&shell->line, &shell->line_lenght, stdin);
-    if (shell->nread == -1)
+    if (shell->nread == -1) {
+        reset_input_buffer(shell, line_backup);
         return EXIT_FAIL;
+    }
     if (shell->nread > 0 && shell->line[shell->nread - 1] == '\n')
         shell->line[shell->nread - 1] = '\0';
-    free_command(shell->command);
+    line_backup = shell->line;
     shell->command = lex_split_words(shell);
-    if (!shell->command) {
-        reset_input_buffer(shell);
-        return SUCCESS;
-    }
+    if (!shell->command)
+        return reset_input_buffer(shell, line_backup);
     handle_cmd_parsing(shell);
-    reset_input_buffer(shell);
+    reset_input_buffer(shell, line_backup);
     safe_free((void **)&shell->command_real_path);
-    free_command(shell->command);
-    shell->command = NULL;
+    free_command(shell);
     return SUCCESS;
 }
 
@@ -80,18 +81,14 @@ int main_loop(shell_parameters_t *shell)
         if (process_input(shell) == EXIT_FAIL)
             break;
     }
-    free(shell->line);
-    shell->line = NULL;
-    if (shell->command)
-        free_command(shell->command);
-    shell->command = NULL;
-    return cleanup_launcher(shell);
+    shell_clean(shell);
+    return SUCCESS;
 }
 
 int main(int ac, char **av, char **env)
 {
-    shell_parameters_t shell =
-    {RUNNING, NULL, {'\0'}, NULL, 0, 0, 0, -1, NULL, NULL, NULL, NULL};
+    shell_parameters_t shell
+        = {RUNNING, NULL, {'\0'}, NULL, 0, 0, 0, -1, NULL, NULL, NULL, NULL};
 
     if (ac > 2)
         return EXIT_FAIL;
