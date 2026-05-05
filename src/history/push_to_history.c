@@ -62,14 +62,15 @@ static int read_history_file(FILE *file, char **line, int *line_nb)
     return SUCCESS;
 }
 
-static int check_history_ll(int fd, shell_parameters_t *shell, int *line_nb)
+static int check_history_ll(char *history_path,
+    int fd,
+    shell_parameters_t *shell,
+    int *line_nb)
 {
     char *line = NULL;
     char *cmd = build_cmd_string(shell);
-    char *history_path = get_history_path(shell);
     FILE *file = fopen(history_path, "r");
 
-    free(history_path);
     if (!file || !cmd) {
         if (file)
             fclose(file);
@@ -92,11 +93,14 @@ void push_to_history(shell_parameters_t *shell)
     int line_nb = 1;
     char *history_path = get_history_path(shell);
 
+    if (!history_path)
+        return;
     if (stat(history_path, &s) == -1)
         history_exists = 0;
     fd = open(history_path, O_WRONLY | O_CREAT | O_APPEND, 0644);
     free(history_path);
-    if (history_exists && check_history_ll(fd, shell, &line_nb) != 0)
+    if (history_exists
+        && check_history_ll(history_path, fd, shell, &line_nb) != 0)
         return;
     write_full_cmd(shell, fd, line_nb);
     close(fd);

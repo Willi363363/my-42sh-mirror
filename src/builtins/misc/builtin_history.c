@@ -14,10 +14,13 @@
 
 int builtin_history(shell_parameters_t *shell)
 {
+    char content[1024] = {0};
     char *history_path = get_history_path(shell);
-    FILE *h = fopen(history_path, "r");
-    char content[1024];
+    FILE *h = NULL;
 
+    if (!history_path)
+        return COMMAND_ERROR;
+    h = fopen(history_path, "r");
     free(history_path);
     if (!h) {
         my_putstr_error("History file not found.\n");
