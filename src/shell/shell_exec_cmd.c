@@ -7,6 +7,7 @@
 #include "builtins/env.h"
 #include "builtins/misc.h"
 #include "execution.h"
+#include "expansion.h"
 #include "global.h"
 #include "shell.h"
 #include "utils.h"
@@ -22,6 +23,7 @@ int shell_exec_cmd(shell_parameters_t *shell)
 {
     int found = 0;
 
+    apply_expansions(shell);
     found = exec_misc_builtins(shell->line, shell);
     if (found == 0 && found != COMMAND_ERROR)
         found = exec_system_cmd(shell);

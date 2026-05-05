@@ -7,6 +7,7 @@
 #ifndef LEXER_H
     #define LEXER_H
     #include "shell.h"
+    #define MAX_ARG_LEN 1024
 
 typedef enum {
     TOKEN_WORD,
