@@ -12,6 +12,11 @@
 #include "shell.h"
 #include "utils.h"
 
+static bool is_separator(char c)
+{
+    return c == ' ' || c == '\t';
+}
+
 static bool handle_quotes(char c, char *depth)
 {
     if (c != '\'' && c != '"')
@@ -33,7 +38,7 @@ static void fill_word(char *line, size_t *cursor, char *word)
     char depth = 0;
 
     for (; line[*cursor]; (*cursor)++) {
-        if (line[*cursor] == ' ' && depth == 0)
+        if (is_separator(line[*cursor]) && depth == 0)
             break;
         if (handle_quotes(line[*cursor], &depth))
             continue;
@@ -59,7 +64,7 @@ char **lex_split_words(shell_parameters_t *shell)
     size_t cursor = 0;
 
     while (shell->line[cursor]) {
-        while (shell->line[cursor] == ' ')
+        while (is_separator(shell->line[cursor]))
             cursor++;
         if (!shell->line[cursor])
             break;
