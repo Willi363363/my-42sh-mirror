@@ -87,8 +87,8 @@ int main_loop(shell_parameters_t *shell)
 
 int main(int ac, char **av, char **env)
 {
-    shell_parameters_t shell
-        = {RUNNING, NULL, {'\0'}, NULL, 0, 0, 0, -1, NULL, NULL, NULL, NULL};
+    shell_parameters_t shell =
+    {RUNNING, NULL, {'\0'}, NULL, 0, 0, 0, -1, NULL, NULL, NULL, NULL};
 
     if (ac > 2)
         return EXIT_FAIL;
@@ -97,5 +97,7 @@ int main(int ac, char **av, char **env)
     shell.env = duplicate_env(env);
     env_extract_paths(&shell);
     main_loop(&shell);
-    return SUCCESS;
+    if (isatty(STDIN_FILENO))
+        return SUCCESS;
+    return shell.last_exit_code;
 }

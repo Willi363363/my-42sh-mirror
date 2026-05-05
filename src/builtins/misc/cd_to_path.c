@@ -62,5 +62,8 @@ int cd_to_path(shell_parameters_t *shell, const char *path)
         shell->last_exit_code = EXIT_FAIL;
         return COMMAND_ERROR;
     }
-    return update_pwd(shell);
+    if (update_pwd(shell) == EXIT_FAIL)
+        return COMMAND_ERROR;
+    shell->last_exit_code = SUCCESS;
+    return COMMAND_FOUND;
 }

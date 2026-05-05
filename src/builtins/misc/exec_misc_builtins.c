@@ -24,7 +24,7 @@ static int has_command_suffix(char *line, int index)
 
 static int is_command(char *line, char *command)
 {
-    return strcmp(line, command) == 0;
+    return strncmp(line, command, strlen(command)) == 0;
 }
 
 static int handle_repeat(char *line, shell_parameters_t *shell)
@@ -41,8 +41,8 @@ static int handle_misc_base(char *line, shell_parameters_t *shell)
         shell->last_exit_code = SUCCESS;
         return COMMAND_FOUND;
     }
-    if (strncmp(line, "echo $?", 7) == 0 &&
-        (line[7] == '\n' || line[7] == '\0'))
+    if (strncmp(line, "echo $?", 7) == 0
+        && (line[7] == '\n' || line[7] == '\0'))
         return echo_last_exit_status(shell);
     if (strncmp(line, "cod", 3) == 0 && has_command_suffix(line, 3))
         return launch_cod_editor(shell);
@@ -51,8 +51,6 @@ static int handle_misc_base(char *line, shell_parameters_t *shell)
 
 static int handle_misc_lookup(char *line, shell_parameters_t *shell)
 {
-    int repeat_status = SUCCESS;
-
     if (is_command(line, "history") && has_command_suffix(line, 7))
         return builtin_history(shell);
     if (is_command(line, "where") && has_command_suffix(line, 5))
@@ -61,10 +59,7 @@ static int handle_misc_lookup(char *line, shell_parameters_t *shell)
         return builtin_which(shell);
     if (is_command(line, "cd") && has_command_suffix(line, 2))
         return builtin_cd(shell);
-    repeat_status = handle_repeat(line, shell);
-    if (repeat_status != SUCCESS)
-        return repeat_status;
-    return SUCCESS;
+    return handle_repeat(line, shell);
 }
 
 int exec_misc_builtins(char *line, shell_parameters_t *shell)
