@@ -9,7 +9,7 @@ SRC = 	$(shell find ./src -name "*.c")
 
 CC = epiclang
 
-CFLAGS = -Iincludes -Wall -Wextra -W
+CFLAGS = -Iinclude -Wall -Wextra -W
 
 LDLIBS = -lncurses
 

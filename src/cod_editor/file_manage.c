@@ -4,6 +4,9 @@
 ** File description:
 ** This file manage input files from the cod editor.
 */
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "global.h"
 
 int create_new_file(char *name)

@@ -4,6 +4,12 @@
 ** File description:
 ** This file launch the cod editor.
 */
+#include <fcntl.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include "cod_editor.h"
 #include "global.h"
 
 int check_if_file_is_here(file_infos_t *file_infos)
@@ -20,7 +26,8 @@ int read_the_file(file_infos_t *file_infos)
 {
     file_infos->filecontent =
         malloc((file_infos->file_stat->st_size + 1) * sizeof(char));
-    if (read(file_infos->fd, file_infos->filecontent,
+    if (read(file_infos->fd,
+            file_infos->filecontent,
             file_infos->file_stat->st_size) == EXIT_FAIL)
         return EXIT_FAIL;
     file_infos->filecontent[file_infos->file_stat->st_size] = '\0';
@@ -39,5 +46,5 @@ void free_it(file_infos_t *file_infos)
 
 void fill_new_file_infos(char *name, file_infos_t *file_infos)
 {
-    file_infos->filepath = my_strdup(name);
+    file_infos->filepath = strdup(name);
 }
