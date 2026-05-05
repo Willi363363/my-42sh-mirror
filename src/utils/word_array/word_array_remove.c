@@ -14,13 +14,14 @@ int word_array_remove(char ***array, size_t index)
 {
     size_t len = *array ? word_array_len(*array) : 0;
     char **new_array = NULL;
+    int j = 0;
 
     if (index < 0 || (size_t)index >= len)
         return EXIT_FAIL;
     new_array = malloc(len * sizeof(char *));
     if (!new_array)
         return EXIT_FAIL;
-    for (size_t i = 0, j = 0; i < len; i++) {
+    for (size_t i = 0; i < len; i++) {
         if (i == index)
             continue;
         new_array[j] = (*array)[i];
