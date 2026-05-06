@@ -68,6 +68,8 @@ char **lex_split_words(shell_parameters_t *shell)
             cursor++;
         if (!shell->line[cursor])
             break;
+        if (shell->line[cursor] == '#')
+            break;
         if (extract_word(shell->line, &cursor, &words) == EXIT_FAIL) {
             word_array_destroy(&words);
             return NULL;
