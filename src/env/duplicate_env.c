@@ -13,6 +13,8 @@ char **duplicate_env(char **env)
     int count = 0;
     char **new_env = NULL;
 
+    if (env == NULL)
+        return NULL;
     for (; env[count] != NULL; count++)
         ;
     new_env = malloc(sizeof(char *) * (count + 1));

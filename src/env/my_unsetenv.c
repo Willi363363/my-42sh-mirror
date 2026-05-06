@@ -6,9 +6,9 @@
 */
 #include <stdlib.h>
 #include <string.h>
+#include "env.h"
 #include "global.h"
 #include "shell.h"
-#include "env.h"
 
 static void shift_left(char **env, int index)
 {
@@ -20,9 +20,11 @@ int my_unsetenv(shell_parameters_t *shell, const char *var)
 {
     size_t len = strlen(var);
 
+    if (!shell || !shell->env || !var)
+        return EXIT_FAIL;
     for (int i = 0; shell->env[i]; i++) {
-        if (strncmp(shell->env[i], var, len) == 0 &&
-            shell->env[i][len] == '=') {
+        if (strncmp(shell->env[i], var, len) == 0
+            && shell->env[i][len] == '=') {
             free(shell->env[i]);
             shift_left(shell->env, i);
             return SUCCESS;

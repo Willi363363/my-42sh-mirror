@@ -10,6 +10,11 @@
     #include <stddef.h>
     #include <sys/types.h>
 
+typedef struct alias_s {
+    char *name;
+    char **value;
+} alias_t;
+
 typedef struct shell_parameters_s {
     int status;
     char **env;
@@ -19,12 +24,12 @@ typedef struct shell_parameters_s {
     ssize_t nread;
     int last_exit_code;
     int command_found;
-    char **paths;
     char **command;
     char *command_real_path;
-    char *home;
+    char **aliases;
 } shell_parameters_t;
 
+void shell_init(shell_parameters_t *shell, char **env);
 int shell_clean(shell_parameters_t *shell);
 int shell_exec_cmd(shell_parameters_t *shell);
 

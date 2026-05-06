@@ -9,7 +9,7 @@
     #include "shell.h"
 
 char **duplicate_env(char **env);
-void env_extract_paths(shell_parameters_t *shell);
+char **env_get_paths(shell_parameters_t *shell);
 int my_setenv(shell_parameters_t *shell, const char *var, const char *value);
 int my_unsetenv(shell_parameters_t *shell, const char *var);
 char *my_getenv(char **env, const char *name);

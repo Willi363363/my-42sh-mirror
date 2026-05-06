@@ -6,20 +6,8 @@
 */
 #include <stdlib.h>
 #include <string.h>
+#include "env.h"
 #include "parsing.h"
-
-static char *find_env_value(shell_parameters_t *shell, char *name)
-{
-    int len = strlen(name);
-
-    if (len == 0)
-        return NULL;
-    for (int i = 0; shell->env[i] != NULL; i++) {
-        if (strncmp(shell->env[i], name, len) == 0 && shell->env[i][len] == '=')
-            return shell->env[i] + len + 1;
-    }
-    return NULL;
-}
 
 static char *expand_single_env(char *arg, shell_parameters_t *shell)
 {
@@ -27,7 +15,7 @@ static char *expand_single_env(char *arg, shell_parameters_t *shell)
 
     if (!arg || arg[0] != '$' || strcmp(arg, "$?") == 0)
         return strdup(arg);
-    value = find_env_value(shell, arg + 1);
+    value = my_getenv(shell->env, arg + 1);
     if (value)
         return strdup(value);
     return strdup("");

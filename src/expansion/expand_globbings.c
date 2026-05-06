@@ -1,6 +1,6 @@
 /*
 ** EPITECH PROJECT, 2025
-** cmd_expand_globbings.c
+** expand_globbings.c
 ** File description:
 ** Expand environment variables inside command arguments.
 */
@@ -33,9 +33,9 @@ static void handle_globbings_expansion(shell_parameters_t *shell,
     globfree(&results);
 }
 
-void cmd_expand_globbings(shell_parameters_t *shell, char ***cmd)
+void expand_globbings(shell_parameters_t *shell, char ***cmd)
 {
-    if (!cmd || !(*cmd) || !shell || !shell->env)
+    if (!cmd || !(*cmd) || !shell)
         return;
     for (size_t i = 1; (*cmd)[i] != NULL; i++) {
         handle_globbings_expansion(shell, cmd, &i);

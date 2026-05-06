@@ -9,27 +9,28 @@
 #include <string.h>
 #include <unistd.h>
 #include "builtins/misc.h"
+#include "env.h"
 #include "global.h"
 #include "shell.h"
+#include "utils.h"
 
 static char *get_command_path(shell_parameters_t *shell, char *command)
 {
-    char *potential_path = NULL;
+    char **paths = env_get_paths(shell);
+    char potential_path[MAX_PATH_LEN] = {0};
 
-    if (command == NULL || shell == NULL)
+    if (command == NULL || shell == NULL || paths == NULL)
         return NULL;
-    for (size_t i = 0; shell->paths[i] != NULL; i++) {
-        potential_path = malloc(MAX_PATH_LEN);
-        if (!potential_path)
-            return NULL;
-        strcpy(potential_path, shell->paths[i]);
+    for (size_t i = 0; paths[i] != NULL; i++) {
+        strcpy(potential_path, paths[i]);
         strcat(potential_path, "/");
         strcat(potential_path, command);
         if (access(potential_path, X_OK) == 0) {
-            return potential_path;
+            word_array_destroy(&paths);
+            return strdup(potential_path);
         }
-        free(potential_path);
     }
+    word_array_destroy(&paths);
     return NULL;
 }
 
