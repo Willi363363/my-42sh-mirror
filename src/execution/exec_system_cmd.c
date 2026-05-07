@@ -33,26 +33,31 @@ static int execute_sys_command(shell_parameters_t *shell)
     return SUCCESS;
 }
 
-static int find_command_path(shell_parameters_t *shell)
+static int try_path(shell_parameters_t *shell, int i)
 {
     char *test_path = NULL;
-    int fd = -1;
 
-    for (int i = 0; shell->paths[i] != NULL; i++) {
-        test_path =
-            malloc(strlen(shell->paths[i]) + 2 + strlen(shell->command[0]));
-        test_path[0] = '\0';
-        strcat(test_path, shell->paths[i]);
-        strcat(test_path, "/");
-        strcat(test_path, shell->command[0]);
-        fd = open(test_path, O_RDONLY);
-        if (fd != -1) {
-            close(fd);
-            shell->command_real_path = strdup(test_path);
-            free(test_path);
-            return 1;
-        }
+    test_path = malloc(strlen(shell->paths[i]) + 2 + strlen(shell->command[0]));
+    test_path[0] = '\0';
+    strcat(test_path, shell->paths[i]);
+    strcat(test_path, "/");
+    strcat(test_path, shell->command[0]);
+    if (access(test_path, X_OK) == 0) {
+        shell->command_real_path = strdup(test_path);
         free(test_path);
+        return 1;
+    }
+    free(test_path);
+    return SUCCESS;
+}
+
+static int find_command_path(shell_parameters_t *shell)
+{
+    if (shell->paths == NULL)
+        return SUCCESS;
+    for (int i = 0; shell->paths[i] != NULL; i++) {
+        if (try_path(shell, i) == 1)
+            return 1;
     }
     return SUCCESS;
 }
