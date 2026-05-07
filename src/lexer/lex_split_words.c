@@ -32,20 +32,41 @@ static bool handle_quotes(char c, char *depth)
     return false;
 }
 
+static bool handle_operator(char *line, size_t *c, char *word, size_t *len)
+{
+    int c_int = *c;
+    int op_len = lex_operators(line, &c_int);
+
+    if (op_len == 0)
+        return false;
+    if (*len > 0)
+        return true;
+    for (int i = 0; i < op_len; i++) {
+        word[*len] = line[*c];
+        (*len)++;
+        if (i + 1 < op_len)
+            (*c)++;
+    }
+    (*c)++;
+    return true;
+}
+
 static void fill_word(char *line, size_t *cursor, char *word)
 {
-    size_t word_len = 0;
+    size_t len = 0;
     char depth = 0;
 
-    for (; line[*cursor]; (*cursor)++) {
+    for (; line[*cursor] && len < MAX_ARG_LEN - 1; (*cursor)++) {
         if (is_separator(line[*cursor]) && depth == 0)
             break;
         if (handle_quotes(line[*cursor], &depth))
             continue;
-        word[word_len] = line[*cursor];
-        word_len++;
+        if (depth == 0 && handle_operator(line, cursor, word, &len))
+            break;
+        word[len] = line[*cursor];
+        len++;
     }
-    word[word_len] = '\0';
+    word[len] = '\0';
 }
 
 static int extract_word(char *line, size_t *cursor, char ***words)
