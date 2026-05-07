@@ -15,7 +15,18 @@ int handle_signal(int status)
 
     if (WIFSIGNALED(status)) {
         sig = WTERMSIG(status);
+<<<<<<< Updated upstream
         my_putstr_error(strsignal(sig));
+=======
+        if (sig == SIGFPE)
+            my_putstr_error("Floating exception");
+        else
+            my_putstr_error(strsignal(sig));
+#ifdef WCOREDUMP
+        if (WCOREDUMP(status))
+            my_putstr_error(" (core dumped)");
+#endif
+>>>>>>> Stashed changes
         my_putstr_error("\n");
     }
     return 128 + sig;

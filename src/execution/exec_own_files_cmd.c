@@ -19,7 +19,7 @@
 static void binary_file_error(shell_parameters_t *shell)
 {
     my_putstr_error(shell->command[0]);
-    my_putstr_error(": Exec format error. Binary file not executable.\n");
+    my_putstr_error(": Exec format error. Wrong Architecture.\n");
 }
 
 static int execute_own_file(shell_parameters_t *shell)
@@ -85,7 +85,7 @@ int exec_own_files_cmd(shell_parameters_t *shell)
         execute_own_file(shell);
     } else {
         my_putstr_error(shell->command[0]);
-        my_putstr_error(": you do not have the rights to execute this file.\n");
+        my_putstr_error(": Permission denied.\n");
         shell->last_exit_code = EXIT_FAIL;
         return close_and_return_code(fd, COMMAND_FOUND);
     }
