@@ -16,7 +16,7 @@ static int cd_to_home(shell_parameters_t *shell)
     char *home = my_getenv(shell->env, "HOME");
 
     if (!home) {
-        my_putstr_error("cd: HOME not set\n");
+        my_putstr_error("cd: No home directory.\n");
         return COMMAND_ERROR;
     }
     return cd_to_path(shell, home);
@@ -42,7 +42,7 @@ int builtin_cd(shell_parameters_t *shell)
     if (strcmp(cmd[1], "-") == 0)
         return cd_to_oldpwd(shell);
     if (cmd[2]) {
-        my_putstr_error("cd: too many arguments\n");
+        my_putstr_error("cd: Too many arguments.\n");
         shell->last_exit_code = EXIT_FAIL;
         return COMMAND_ERROR;
     }
