@@ -12,9 +12,19 @@
 #include "builtins/misc.h"
 #include "global.h"
 #include "lexer.h"
-#include "parsing.h"
 #include "shell.h"
 #include "utils.h"
+
+static void free_parsed_args(char **parsed_args)
+{
+    if (parsed_args == NULL)
+        return;
+    for (int i = 0; parsed_args[i] != NULL; i++) {
+        free(parsed_args[i]);
+        parsed_args[i] = NULL;
+    }
+    free(parsed_args);
+}
 
 static bool invalid_repeat_args(char **parsed_args)
 {
@@ -39,29 +49,37 @@ static int parse_repeat_count(char **parsed_args, int *count)
     return SUCCESS;
 }
 
-static char *build_subcommand_line(char **args, int start)
+static int args_total_len(char **args, int start)
 {
-    char *sub_line = NULL;
-    size_t len = 0;
+    int len = 0;
 
     for (int i = start; args[i] != NULL; i++) {
         len += strlen(args[i]);
         if (args[i + 1] != NULL)
             len++;
     }
-    sub_line = malloc(len + 1);
-    if (sub_line == NULL)
+    return len;
+}
+
+static char *build_subcommand_line(char **args, int start)
+{
+    int len = args_total_len(args, start);
+    char *line = NULL;
+
+    line = malloc((len + 1) * sizeof(char));
+    if (line == NULL)
         return NULL;
-    sub_line[0] = '\0';
+    line[0] = '\0';
     for (int i = start; args[i] != NULL; i++) {
-        strcat(sub_line, args[i]);
+        strcat(line, args[i]);
         if (args[i + 1] != NULL)
-            strcat(sub_line, " ");
+            strcat(line, " ");
     }
-    return sub_line;
+    return line;
 }
 
 static int run_repeat_loop(shell_parameters_t *shell,
+    char **parsed_args,
     char *sub_line,
     int count)
 {
@@ -69,16 +87,11 @@ static int run_repeat_loop(shell_parameters_t *shell,
     char **saved_cmd = shell->command;
     char *saved_line = shell->line;
 
-    shell->line = sub_line;
     for (int i = 0; i < count; i++) {
-        shell->command = lex_split_words(shell->line);
+        shell->command = parsed_args + 2;
+        shell->line = sub_line;
         safe_free((void **)&shell->command_real_path);
-        if (shell->command == NULL) {
-            result = EXIT_FAIL;
-            break;
-        }
-        result = handle_cmd_parsing(shell);
-        word_array_destroy(&shell->command);
+        result = shell_exec_cmd(shell);
         if (result != SUCCESS)
             break;
     }
@@ -88,6 +101,7 @@ static int run_repeat_loop(shell_parameters_t *shell,
 }
 
 static int build_repeat_context(shell_parameters_t *shell,
+    char ***parsed_args,
     char **sub_line,
     int *count)
 {
@@ -96,7 +110,7 @@ static int build_repeat_context(shell_parameters_t *shell,
         shell->last_exit_code = 1;
         return EXIT_FAIL;
     }
-    *sub_line = build_subcommand_line(shell->command, 2);
+    *sub_line = build_subcommand_line(*parsed_args, 2);
     if (*sub_line == NULL) {
         shell->last_exit_code = 1;
         return EXIT_FAIL;
@@ -108,6 +122,7 @@ int builtin_repeat(shell_parameters_t *shell)
 {
     int count = 0;
     int loop_status = SUCCESS;
+    char **parsed_args = NULL;
     char *sub_line = NULL;
 
     if (!shell || !shell->command) {
@@ -118,8 +133,9 @@ int builtin_repeat(shell_parameters_t *shell)
         EXIT_FAIL) {
         return COMMAND_ERROR;
     }
-    loop_status = run_repeat_loop(shell, sub_line, count);
+    loop_status = run_repeat_loop(shell, parsed_args, sub_line, count);
     free(sub_line);
+    free_parsed_args(parsed_args);
     if (loop_status != SUCCESS)
         return COMMAND_ERROR;
     return COMMAND_FOUND;
