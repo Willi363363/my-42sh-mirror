@@ -58,17 +58,17 @@ static int extract_word(char *line, size_t *cursor, char ***words)
     return SUCCESS;
 }
 
-char **lex_split_words(shell_parameters_t *shell)
+char **lex_split_words(char *line)
 {
     char **words = NULL;
     size_t cursor = 0;
 
-    while (shell->line[cursor]) {
-        while (is_separator(shell->line[cursor]))
+    while (line[cursor]) {
+        while (is_separator(line[cursor]))
             cursor++;
-        if (!shell->line[cursor])
+        if (!line[cursor])
             break;
-        if (extract_word(shell->line, &cursor, &words) == EXIT_FAIL) {
+        if (extract_word(line, &cursor, &words) == EXIT_FAIL) {
             word_array_destroy(&words);
             return NULL;
         }

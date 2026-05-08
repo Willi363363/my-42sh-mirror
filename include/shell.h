@@ -9,11 +9,8 @@
     #define MAX_PATH_LEN 4096
     #include <stddef.h>
     #include <sys/types.h>
+    #include "alias.h"
 
-typedef struct alias_s {
-    char *name;
-    char **value;
-} alias_t;
 
 typedef struct shell_parameters_s {
     int status;
@@ -26,7 +23,7 @@ typedef struct shell_parameters_s {
     int command_found;
     char **command;
     char *command_real_path;
-    char **aliases;
+    alias_t *aliases;
 } shell_parameters_t;
 
 void shell_init(shell_parameters_t *shell, char **env);

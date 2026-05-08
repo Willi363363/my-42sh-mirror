@@ -8,6 +8,7 @@
     #define MISC_H
     #include "shell.h"
 
+int builtin_alias(shell_parameters_t *shell);
 int builtin_history(shell_parameters_t *shell);
 int builtin_where(shell_parameters_t *shell);
 int builtin_which(shell_parameters_t *shell);

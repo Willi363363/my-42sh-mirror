@@ -57,7 +57,7 @@ static int process_input(shell_parameters_t *shell)
     if (shell->nread > 0 && shell->line[shell->nread - 1] == '\n')
         shell->line[shell->nread - 1] = '\0';
     line_backup = shell->line;
-    shell->command = lex_split_words(shell);
+    shell->command = lex_split_words(shell->line);
     if (!shell->command)
         return reset_input_buffer(shell, line_backup);
     handle_cmd_parsing(shell);

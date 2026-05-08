@@ -59,6 +59,8 @@ static int handle_misc_lookup(char *line, shell_parameters_t *shell)
         return builtin_which(shell);
     if (is_command(line, "cd") && has_command_suffix(line, 2))
         return builtin_cd(shell);
+    if (is_command(line, "alias") && has_command_suffix(line, 5))
+        return builtin_alias(shell);
     return handle_repeat(line, shell);
 }
 

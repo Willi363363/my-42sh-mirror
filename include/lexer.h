@@ -37,6 +37,6 @@ int count_words(char *str);
 int lex_operators(char *str, int *i);
 int build_word_array(char *str, char **res);
 int process_word(char *str, int i, int *start, int *wsize);
-char **lex_split_words(shell_parameters_t *shell);
+char **lex_split_words(char *line);
 
 #endif /* !LEXER_H */
