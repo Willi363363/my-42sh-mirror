@@ -12,7 +12,7 @@
 static void set_error(shell_parameters_t *shell, const char *msg)
 {
     my_putstr_error(msg);
-    shell->last_exit_code = 84;
+    shell->last_exit_code = EXIT_FAIL;
     shell->command_found = 1;
 }
 
@@ -31,7 +31,7 @@ int builtin_setenv(shell_parameters_t *shell)
     int len = my_tablen(shell->command);
 
     if (len > 3) {
-        set_error(shell, "setenv: too many arguments.\n");
+        set_error(shell, "setenv: Too many arguments.\n");
         return COMMAND_FOUND;
     }
     if (len < 2) {

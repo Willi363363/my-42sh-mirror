@@ -28,17 +28,18 @@ static int print_env(shell_parameters_t *shell)
     return COMMAND_FOUND;
 }
 
-int exec_env_builtins(char *line, shell_parameters_t *shell)
+int exec_env_builtins(shell_parameters_t *shell)
 {
     if (shell->command_found == SUCCESS)
         return SUCCESS;
-    if (strncmp(line, "env", 3) == 0)
+    if (strcmp(shell->command[0], "env") == 0)
         return print_env(shell);
-    if (strcmp(line, "setenv") == 0)
-        return print_env(shell);
-    if (strncmp(line, "setenv ", 7) == 0)
+    if (strcmp(shell->command[0], "setenv") == 0) {
+        if (strcmp(shell->command[1], "env") == 0)
+            return print_env(shell);
         return builtin_setenv(shell);
-    if (strncmp(line, "unsetenv ", 9) == 0)
+    }
+    if (strcmp(shell->command[0], "unsetenv ") == 0)
         return builtin_unsetenv(shell);
     return SUCCESS;
 }

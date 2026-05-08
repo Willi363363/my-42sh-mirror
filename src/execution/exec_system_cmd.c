@@ -39,15 +39,12 @@ static int execute_sys_command(shell_parameters_t *shell)
 static bool is_target_path(shell_parameters_t *shell, char *path)
 {
     char *test_path = malloc(strlen(path) + 2 + strlen(shell->command[0]));
-    int fd = -1;
 
     test_path[0] = '\0';
     strcat(test_path, path);
     strcat(test_path, "/");
     strcat(test_path, shell->command[0]);
-    fd = open(test_path, O_RDONLY);
-    if (fd != -1) {
-        close(fd);
+    if (access(test_path, X_OK) == 0) {
         shell->command_real_path = strdup(test_path);
         free(test_path);
         return true;

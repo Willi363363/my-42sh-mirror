@@ -65,7 +65,7 @@ static int which_command(shell_parameters_t *shell, int i)
     char *cmd_path = NULL;
 
     if (is_builtin(shell->command[i]) == COMMAND_FOUND) {
-        printf("%s:  shell built-in command.\n", shell->command[i]);
+        printf("%s: shell built-in command.\n", shell->command[i]);
         return COMMAND_FOUND;
     }
     cmd_path = get_command_path(shell, shell->command[i]);

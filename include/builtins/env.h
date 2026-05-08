@@ -10,6 +10,6 @@
 
 int builtin_setenv(shell_parameters_t *shell);
 int builtin_unsetenv(shell_parameters_t *shell);
-int exec_env_builtins(char *line, shell_parameters_t *shell);
+int exec_env_builtins(shell_parameters_t *shell);
 
 #endif /* !ENV_BUILTINS_H */

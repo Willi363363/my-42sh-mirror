@@ -24,11 +24,11 @@ int shell_exec_cmd(shell_parameters_t *shell)
     int found = 0;
 
     apply_expansions(shell);
-    found = exec_misc_builtins(shell->line, shell);
+    found = exec_misc_builtins(shell);
     if (found == 0 && found != COMMAND_ERROR)
         found = exec_system_cmd(shell);
     if (found == 0 && found != COMMAND_ERROR)
-        found = exec_env_builtins(shell->line, shell);
+        found = exec_env_builtins(shell);
     if (found == 0 && found != COMMAND_ERROR)
         found = exec_own_files_cmd(shell);
     if (found == COMMAND_FOUND || found == COMMAND_ERROR)

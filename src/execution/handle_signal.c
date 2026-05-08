@@ -5,6 +5,7 @@
 ** Handle a signal and return the corresponding exit code
 */
 #include <string.h>
+#include <signal.h>
 #include <sys/wait.h>
 #include "execution.h"
 #include "utils.h"
@@ -15,7 +16,10 @@ int handle_signal(int status)
 
     if (WIFSIGNALED(status)) {
         sig = WTERMSIG(status);
-        my_putstr_error(strsignal(sig));
+        if (sig == SIGFPE)
+            my_putstr_error("Floating point exception");
+        else
+            my_putstr_error(strsignal(sig));
         my_putstr_error("\n");
     }
     return 128 + sig;
