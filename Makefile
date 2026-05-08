@@ -46,16 +46,15 @@ re: fclean all
 
 $(TESTS): $(TESTS_SRC) $(SRC)
 	$(CC) $(TESTS_SRC) $(SRC) -o $(TESTS) $(CFLAGS) $(TESTS_LDFLAGS) $(LDLIBS)
-	mkdir -p $(TESTS_COVERAGE_DIR)
-	mv *.gcno $(TESTS_COVERAGE_DIR) || true
 
 tests_run: $(TESTS)
-	./$(TESTS)
-	mkdir -p $(TESTS_COVERAGE_DIR)
 	rm -f $(TESTS_COVERAGE_DIR)/*.gcda || true
-	mv *.gcda $(TESTS_COVERAGE_DIR) || true
+	./$(TESTS)
 
 tests_show: tests_run
+	mkdir -p $(TESTS_COVERAGE_DIR)
+	mv *.gcno $(TESTS_COVERAGE_DIR) || true
+	mv *.gcda $(TESTS_COVERAGE_DIR) || true
 	mv $(TESTS_COVERAGE_DIR)/*.gcda . || true
 	mv $(TESTS_COVERAGE_DIR)/*.gcno . || true
 	gcovr --gcov-executable "llvm-cov gcov" --html-details coverage.html
