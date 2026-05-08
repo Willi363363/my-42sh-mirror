@@ -34,6 +34,8 @@ static int add_env_var(shell_parameters_t *shell, const char *env_str)
     int i = 0;
     char **new_env = NULL;
 
+    if (!shell || !shell->env || !env_str)
+        return EXIT_FAIL;
     for (; shell->env[i]; i++)
         ;
     new_env = malloc(sizeof(char *) * (i + 2));

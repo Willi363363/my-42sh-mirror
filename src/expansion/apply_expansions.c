@@ -11,5 +11,6 @@ void apply_expansions(shell_parameters_t *shell)
 {
     if (!shell || !shell->command)
         return;
-    cmd_expand_globbings(shell, &shell->command);
+    expand_globbings(shell, &shell->command);
+    expand_aliases(shell, &shell->command);
 }

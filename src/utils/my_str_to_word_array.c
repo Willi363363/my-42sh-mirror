@@ -36,7 +36,7 @@ static int words_counter(char *str, int i)
         i = skip_normal_word(str, i);
     while (str[i] == ' ')
         i++;
-    return 1 + words_counter(str, i);
+    return EXIT_FAILURE + words_counter(str, i);
 }
 
 static int detect_if_quoted(char *str, int *i, int *wsize)
@@ -47,7 +47,7 @@ static int detect_if_quoted(char *str, int *i, int *wsize)
     }
     if (str[*i] == '"')
         (*i)++;
-    return 1;
+    return EXIT_FAILURE;
 }
 
 static int detect_normal(char *str, int *i, int *wsize)
@@ -56,7 +56,7 @@ static int detect_normal(char *str, int *i, int *wsize)
         (*wsize)++;
         (*i)++;
     }
-    return 1;
+    return EXIT_FAILURE;
 }
 
 static int process_word(char *str, int i, int *start, int *wsize)
@@ -114,7 +114,7 @@ static int array_builder(char *str, char **res)
         res_i++;
         for (; str[i] == ' '; i++);
     }
-    return 1;
+    return EXIT_FAILURE;
 }
 
 char **my_str_to_word_array(char *str)

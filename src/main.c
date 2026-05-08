@@ -7,19 +7,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "env.h"
 #include "global.h"
 #include "lexer.h"
 #include "parsing.h"
 #include "shell.h"
 #include "utils.h"
 
-static void check_status(shell_parameters_t *shell)
+static void print_prompt_line(shell_parameters_t *shell)
 {
-    if (shell->last_exit_code != 0)
-        printf(" \033[1;31m$\033[0m> ");
-    else
-        printf(" \033[1;32m$\033[0m> ");
+    char *color = shell->last_exit_code != 0 ? RED : GREEN;
+
+    if (isatty(STDIN_FILENO)) {
+        getcwd(shell->pwd, sizeof(shell->pwd));
+        printf("%s %s$%s> ", shell->pwd, color, RESET);
+    }
 }
 
 static void free_command(shell_parameters_t *shell)
@@ -56,7 +57,7 @@ static int process_input(shell_parameters_t *shell)
     if (shell->nread > 0 && shell->line[shell->nread - 1] == '\n')
         shell->line[shell->nread - 1] = '\0';
     line_backup = shell->line;
-    shell->command = lex_split_words(shell);
+    shell->command = lex_split_words(shell->line);
     if (!shell->command)
         return reset_input_buffer(shell, line_backup);
     handle_cmd_parsing(shell);
@@ -70,14 +71,8 @@ int main_loop(shell_parameters_t *shell)
 {
     if (!shell)
         return EXIT_FAIL;
-    shell->line = NULL;
-    shell->line_lenght = 0;
     while (shell->status == RUNNING) {
-        if (isatty(STDIN_FILENO)) {
-            getcwd(shell->pwd, sizeof(shell->pwd));
-            printf("%s", shell->pwd);
-            check_status(shell);
-        }
+        print_prompt_line(shell);
         if (process_input(shell) == EXIT_FAIL)
             break;
     }
@@ -87,15 +82,13 @@ int main_loop(shell_parameters_t *shell)
 
 int main(int ac, char **av, char **env)
 {
-    shell_parameters_t shell =
-    {RUNNING, NULL, {'\0'}, NULL, 0, 0, 0, -1, NULL, NULL, NULL, NULL};
+    shell_parameters_t shell = {0};
 
     if (ac > 2)
-        return EXIT_FAIL;
+        return FATAL_ERROR;
     if (ac == 2 && freopen(av[1], "r", stdin) == NULL)
         return EXIT_FAIL;
-    shell.env = duplicate_env(env);
-    env_extract_paths(&shell);
+    shell_init(&shell, env);
     main_loop(&shell);
     if (isatty(STDIN_FILENO))
         return SUCCESS;

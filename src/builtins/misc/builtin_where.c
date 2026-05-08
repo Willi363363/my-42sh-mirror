@@ -9,8 +9,10 @@
 #include <string.h>
 #include <unistd.h>
 #include "builtins/misc.h"
+#include "env.h"
 #include "global.h"
 #include "shell.h"
+#include "utils.h"
 
 static char *build_full_path(char *dir, char *cmd)
 {
@@ -46,17 +48,19 @@ static int find_command_paths(shell_parameters_t *shell, int i)
 {
     char *full_path = NULL;
     int found = 0;
+    char **paths = env_get_paths(shell);
 
-    if (!shell || !shell->paths)
+    if (!shell || !paths)
         return 0;
-    for (int j = 0; shell->paths[j] != NULL; j++) {
-        full_path = build_full_path(shell->paths[j], shell->command[i]);
+    for (int j = 0; paths[j] != NULL; j++) {
+        full_path = build_full_path(paths[j], shell->command[i]);
         if (full_path != NULL && access(full_path, X_OK) == 0) {
             printf("%s\n", full_path);
             found = 1;
         }
         free(full_path);
     }
+    word_array_destroy(&paths);
     return found;
 }
 

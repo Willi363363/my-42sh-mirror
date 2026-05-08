@@ -10,6 +10,7 @@
 
 void apply_expansions(shell_parameters_t *shell);
 
-void cmd_expand_globbings(shell_parameters_t *shell, char ***cmd);
+void expand_globbings(shell_parameters_t *shell, char ***cmd);
+void expand_aliases(shell_parameters_t *shell, char ***cmd);
 
 #endif /* !EXPANSION_H */

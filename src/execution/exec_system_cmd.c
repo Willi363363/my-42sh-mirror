@@ -5,13 +5,16 @@
 ** This file contains all the user's commands functions.
 */
 #include <fcntl.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include "env.h"
 #include "execution.h"
 #include "global.h"
 #include "shell.h"
+#include "utils.h"
 
 static int execute_sys_command(shell_parameters_t *shell)
 {
@@ -22,7 +25,7 @@ static int execute_sys_command(shell_parameters_t *shell)
         return EXIT_FAIL;
     if (pid == 0) {
         execve(shell->command_real_path, shell->command, shell->env);
-        exit(84);
+        exit(1);
     } else {
         waitpid(pid, &status, 0);
         if (WIFEXITED(status))
@@ -33,40 +36,44 @@ static int execute_sys_command(shell_parameters_t *shell)
     return SUCCESS;
 }
 
-static int try_path(shell_parameters_t *shell, int i)
+static bool is_target_path(shell_parameters_t *shell, char *path)
 {
-    char *test_path = NULL;
+    char *test_path = malloc(strlen(path) + 2 + strlen(shell->command[0]));
 
-    test_path = malloc(strlen(shell->paths[i]) + 2 + strlen(shell->command[0]));
     test_path[0] = '\0';
-    strcat(test_path, shell->paths[i]);
+    strcat(test_path, path);
     strcat(test_path, "/");
     strcat(test_path, shell->command[0]);
     if (access(test_path, X_OK) == 0) {
         shell->command_real_path = strdup(test_path);
         free(test_path);
-        return 1;
+        return true;
     }
     free(test_path);
-    return SUCCESS;
+    return false;
 }
 
-static int find_command_path(shell_parameters_t *shell)
+static bool find_command_path(shell_parameters_t *shell)
 {
-    if (shell->paths == NULL)
-        return SUCCESS;
-    for (int i = 0; shell->paths[i] != NULL; i++) {
-        if (try_path(shell, i) == 1)
-            return 1;
+    char **paths = env_get_paths(shell);
+
+    if (!paths)
+        return false;
+    for (int i = 0; paths[i] != NULL; i++) {
+        if (is_target_path(shell, paths[i])) {
+            word_array_destroy(&paths);
+            return true;
+        }
     }
-    return SUCCESS;
+    word_array_destroy(&paths);
+    return false;
 }
 
 int exec_system_cmd(shell_parameters_t *shell)
 {
     if (shell->command == NULL || shell->command[0] == NULL)
         return SUCCESS;
-    if (find_command_path(shell) == 1) {
+    if (find_command_path(shell)) {
         execute_sys_command(shell);
         return COMMAND_FOUND;
     }
