@@ -42,6 +42,17 @@ Test(builtin_alias, print_nonexistent_alias)
     shell_clean(&shell);
 }
 
+Test(builtin_alias, print_removed_alias)
+{
+    shell_parameters_t shell = {0};
+
+    setup_default_shell(&shell);
+    aliases_remove(&shell.aliases, 0);
+    word_array_push(&shell.command, "l");
+    cr_assert_eq(builtin_alias(&shell), COMMAND_ERROR);
+    shell_clean(&shell);
+}
+
 Test(builtin_alias, create_new_alias)
 {
     shell_parameters_t shell = {0};

@@ -27,10 +27,10 @@ Test(builtin_setenv, set_new_variable)
     shell_parameters_t shell = {0};
 
     setup_default_shell(&shell);
-    word_array_push(&shell.command, "TEST_VAR");
+    word_array_push(&shell.command, "TEST_00var");
     word_array_push(&shell.command, "test_value");
     cr_assert_eq(builtin_setenv(&shell), COMMAND_FOUND);
-    cr_assert_str_eq(my_getenv(shell.env, "TEST_VAR"), "test_value");
+    cr_assert_str_eq(my_getenv(shell.env, "TEST_00var"), "test_value");
     shell_clean(&shell);
 }
 
