@@ -85,7 +85,7 @@ int main(int ac, char **av, char **env)
     shell_parameters_t shell = {0};
 
     if (ac > 2)
-        return EXIT_FAIL;
+        return FATAL_ERROR;
     if (ac == 2 && freopen(av[1], "r", stdin) == NULL)
         return EXIT_FAIL;
     shell_init(&shell, env);

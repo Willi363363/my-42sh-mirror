@@ -11,7 +11,7 @@ static int operator_assert(int e, int i, char **operators, char *str)
 {
     if (strlen(operators[e]) == 1) {
         if (str[i] == operators[e][0])
-            return 1;
+            return EXIT_FAIL;
     }
     if (strlen(operators[e]) == 2 && str[i + 1]) {
         if (str[i] == operators[e][0] && str[i + 1] == operators[e][1])

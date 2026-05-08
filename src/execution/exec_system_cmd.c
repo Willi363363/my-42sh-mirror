@@ -25,7 +25,7 @@ static int execute_sys_command(shell_parameters_t *shell)
         return EXIT_FAIL;
     if (pid == 0) {
         execve(shell->command_real_path, shell->command, shell->env);
-        exit(84);
+        exit(1);
     } else {
         waitpid(pid, &status, 0);
         if (WIFEXITED(status))

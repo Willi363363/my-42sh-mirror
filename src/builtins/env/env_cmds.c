@@ -32,14 +32,13 @@ int exec_env_builtins(shell_parameters_t *shell)
 {
     if (shell->command_found == SUCCESS)
         return SUCCESS;
+    if (shell->command == NULL || shell->command[0] == NULL)
+        return SUCCESS;
     if (strcmp(shell->command[0], "env") == 0)
         return print_env(shell);
-    if (strcmp(shell->command[0], "setenv") == 0) {
-        if (strcmp(shell->command[1], "env") == 0)
-            return print_env(shell);
+    if (strcmp(shell->command[0], "setenv") == 0)
         return builtin_setenv(shell);
-    }
-    if (strcmp(shell->command[0], "unsetenv ") == 0)
+    if (strcmp(shell->command[0], "unsetenv") == 0)
         return builtin_unsetenv(shell);
     return SUCCESS;
 }

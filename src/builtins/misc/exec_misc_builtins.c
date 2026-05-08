@@ -24,7 +24,7 @@ static int handle_misc_base(shell_parameters_t *shell)
         shell->last_exit_code = SUCCESS;
         return COMMAND_FOUND;
     }
-    if (strcmp(shell->command[0], "echo") == 0
+    if (strcmp(shell->command[0], "echo") == 0 && shell->command[1]
         && strcmp(shell->command[1], "$?") == 0 && shell->command[2] == NULL)
         return echo_last_exit_status(shell);
     if (strcmp(shell->command[0], "cod") == 0)
@@ -54,6 +54,8 @@ int exec_misc_builtins(shell_parameters_t *shell)
     int status = SUCCESS;
 
     if (shell->command_found == SUCCESS)
+        return SUCCESS;
+    if (shell->command == NULL || shell->command[0] == NULL)
         return SUCCESS;
     status = handle_misc_base(shell);
     if (status != SUCCESS)
