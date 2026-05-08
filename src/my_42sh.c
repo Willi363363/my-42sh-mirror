@@ -12,6 +12,7 @@
 #include "parsing.h"
 #include "shell.h"
 #include "utils.h"
+#include "env.h"
 
 static void print_prompt_line(shell_parameters_t *shell)
 {
@@ -89,6 +90,7 @@ int my_42sh(int ac, char **av, char **env)
     if (ac == 2 && freopen(av[1], "r", stdin) == NULL)
         return EXIT_FAIL;
     shell_init(&shell, env);
+    my_unsetenv(&shell, "OLDPWD");
     main_loop(&shell);
     if (isatty(STDIN_FILENO))
         return SUCCESS;
