@@ -28,7 +28,7 @@ static void setup_default_shell(shell_parameters_t *shell)
     my_setenv(shell, "PATH", "/bin:/usr/bin");
 }
 
-Test(run_ast, run_simple_command, .init = cr_redirect_stdout)
+Test(run_ast, run_simple_external_command, .init = cr_redirect_stdout)
 {
     shell_parameters_t shell = {0};
     ast_node_t *node = NULL;
@@ -40,6 +40,21 @@ Test(run_ast, run_simple_command, .init = cr_redirect_stdout)
     cr_assert_eq(run_ast(node, &shell), SUCCESS);
     cr_assert_eq(shell.last_exit_code, 0);
     cr_assert_stdout_eq_str("abc\n");
+    shell_clean(&shell);
+}
+
+Test(run_ast, run_simple_builtin_command, .init = cr_redirect_stdout)
+{
+    shell_parameters_t shell = {0};
+    ast_node_t *node = NULL;
+
+    setup_default_shell(&shell);
+    node = ast_node_create();
+    node->type = NODE_COMMAND;
+    node->args = lex_split_words("env");
+    cr_assert_eq(run_ast(node, &shell), SUCCESS);
+    cr_assert_eq(shell.last_exit_code, 0);
+    cr_assert_stdout_eq_str("PATH=/bin:/usr/bin\n");
     shell_clean(&shell);
 }
 
