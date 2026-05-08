@@ -91,9 +91,9 @@ int main(int ac, char **av, char **env)
     {RUNNING, NULL, {'\0'}, NULL, 0, 0, 0, -1, NULL, NULL, NULL, NULL};
 
     if (ac > 2)
-        return EXIT_FAIL;
+        return FATAL_ERROR;
     if (ac == 2 && freopen(av[1], "r", stdin) == NULL)
-        return EXIT_FAIL;
+        return FATAL_ERROR;
     shell.env = duplicate_env(env);
     env_extract_paths(&shell);
     main_loop(&shell);

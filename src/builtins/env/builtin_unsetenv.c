@@ -18,16 +18,14 @@ static void set_error(shell_parameters_t *shell, const char *msg)
 int builtin_unsetenv(shell_parameters_t *shell)
 {
     int len = my_tablen(shell->command);
-    int ret = 0;
 
     if (len < 2) {
         set_error(shell, "unsetenv: Too few arguments.\n");
-        return COMMAND_ERROR;
+        return COMMAND_FOUND;
     }
-    for (int i = 1; shell->command[i]; i++) {
-        if (my_unsetenv(shell, shell->command[i]) == EXIT_FAIL)
-            ret = EXIT_FAIL;
+    for (int i = 1; shell->command[i] != NULL; i++) {
+        my_unsetenv(shell, shell->command[i]);
     }
-    shell->last_exit_code = ret;
+    shell->last_exit_code = 0;
     return COMMAND_FOUND;
 }

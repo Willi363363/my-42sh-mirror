@@ -5,6 +5,7 @@
 ** Builtin cd command implementation
 */
 #include <string.h>
+#include <stdio.h>
 #include "builtins/misc.h"
 #include "env.h"
 #include "global.h"

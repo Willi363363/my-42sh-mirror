@@ -33,7 +33,7 @@ static int execute_own_file(shell_parameters_t *shell)
         execve(shell->command[0], shell->command, shell->env);
         if (errno == ENOEXEC)
             binary_file_error(shell);
-        exit(84);
+        exit(1);
     } else {
         waitpid(pid, &status, 0);
         if (WIFEXITED(status))
