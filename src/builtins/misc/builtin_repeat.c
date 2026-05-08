@@ -91,7 +91,8 @@ static int build_repeat_context(shell_parameters_t *shell,
     char **sub_line,
     int *count)
 {
-    if (parse_repeat_count(shell->command, count) == EXIT_FAIL) {
+    *parsed_args = lex_split_words(shell->line);
+    if (parse_repeat_count(*parsed_args, count) == EXIT_FAIL) {
         shell->last_exit_code = 1;
         return EXIT_FAIL;
     }
@@ -103,14 +104,17 @@ static int build_repeat_context(shell_parameters_t *shell,
     return SUCCESS;
 }
 
-int builtin_repeat(shell_parameters_t *shell, char **args)
+int builtin_repeat(shell_parameters_t *shell)
 {
     int count = 0;
     int loop_status = SUCCESS;
     char *sub_line = NULL;
 
-    (void)args;
-    if (build_repeat_context(shell, &sub_line, &count) ==
+    if (!shell || !shell->command) {
+        fprintf(stderr, "repeat: Invalid shell context.\n");
+        return COMMAND_ERROR;
+    }
+    if (build_repeat_context(shell, &parsed_args, &sub_line, &count) ==
         EXIT_FAIL) {
         return COMMAND_ERROR;
     }

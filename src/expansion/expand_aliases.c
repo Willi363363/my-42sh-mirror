@@ -13,10 +13,9 @@
 #include "shell.h"
 #include "utils.h"
 
-static void
-handle_alias_expansion(shell_parameters_t *shell, char ***cmd, size_t index)
+static void handle_alias_expansion(shell_parameters_t *shell, char ***cmd)
 {
-    char *alias_name = (*cmd)[index];
+    char *alias_name = (*cmd)[0];
     char **alias_value = NULL;
 
     for (size_t i = 0; shell->aliases[i].name; i++) {
@@ -27,15 +26,14 @@ handle_alias_expansion(shell_parameters_t *shell, char ***cmd, size_t index)
     }
     if (!alias_value)
         return;
-    word_array_remove(cmd, index);
+    word_array_remove(cmd, 0);
     for (ssize_t i = word_array_len(alias_value) - 1; i >= 0; i--)
-        word_array_insert(cmd, alias_value[i], index);
+        word_array_insert(cmd, alias_value[i], 0);
 }
 
 void expand_aliases(shell_parameters_t *shell, char ***cmd)
 {
     if (!cmd || !(*cmd) || !shell || !shell->aliases)
         return;
-    for (size_t i = 0; (*cmd)[i] != NULL; i++)
-        handle_alias_expansion(shell, cmd, i);
+    handle_alias_expansion(shell, cmd);
 }

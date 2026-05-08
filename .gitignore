@@ -3,7 +3,6 @@
 unit_tests
 *.gcda
 *.gcno
-tests
 .vscode
 *~
 .bonus
@@ -18,3 +17,6 @@ compile_commands.json
 *.gcov
 vgcore*
 history
+*.html
+*.js
+*.css

@@ -10,10 +10,15 @@
 int is_alphanums(char const *str)
 {
     for (int i = 0; str[i] != '\0'; i++) {
-        if (!((str[i] >= 'a' && str[i] <= 'z') ||
-                (str[i] >= 'A' && str[i] <= 'Z') ||
-                (str[i] >= '0' && str[i] <= '9')))
-            return EXIT_FAIL;
+        if ((str[i] >= 'a' && str[i] <= 'z'))
+            continue;
+        if ((str[i] >= 'A' && str[i] <= 'Z'))
+            continue;
+        if ((str[i] >= '0' && str[i] <= '9'))
+            continue;
+        if (str[i] == '_')
+            continue;
+        return EXIT_FAIL;
     }
     return SUCCESS;
 }

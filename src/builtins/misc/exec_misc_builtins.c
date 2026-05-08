@@ -45,7 +45,7 @@ static int handle_misc_lookup(shell_parameters_t *shell)
     if (strcmp(shell->command[0], "alias") == 0)
         return builtin_alias(shell);
     if (strcmp(shell->command[0], "repeat") == 0)
-        return builtin_repeat(shell, shell->command);
+        return builtin_repeat(shell);
     return SUCCESS;
 }
 

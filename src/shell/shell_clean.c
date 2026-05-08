@@ -10,15 +10,16 @@
 
 int shell_clean(shell_parameters_t *shell)
 {
-    if (shell->env != NULL) {
-        for (int i = 0; shell->env[i] != NULL; i++)
-            safe_free((void **)&shell->env[i]);
-        safe_free((void **)&shell->env);
-    }
-    if (shell->command != NULL) {
-        for (int i = 0; shell->command[i] != NULL; i++)
-            safe_free((void **)&shell->command[i]);
-        safe_free((void **)&shell->command);
+    if (shell->env != NULL)
+        word_array_destroy(&shell->env);
+    if (shell->command != NULL)
+        word_array_destroy(&shell->command);
+    if (shell->aliases != NULL) {
+        for (size_t i = 0; shell->aliases[i].name != NULL; i++) {
+            safe_free((void **)&shell->aliases[i].name);
+            word_array_destroy(&shell->aliases[i].value);
+        }
+        safe_free((void **)&shell->aliases);
     }
     safe_free((void **)&shell->line);
     safe_free((void **)&shell->command_real_path);
