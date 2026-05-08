@@ -118,17 +118,19 @@ static int build_repeat_context(shell_parameters_t *shell,
     return SUCCESS;
 }
 
-int builtin_repeat(shell_parameters_t *shell, char **args)
+int builtin_repeat(shell_parameters_t *shell)
 {
     int count = 0;
     int loop_status = SUCCESS;
     char **parsed_args = NULL;
     char *sub_line = NULL;
 
-    (void)args;
-    if (build_repeat_context(shell, &parsed_args, &sub_line, &count)
-        == EXIT_FAIL) {
-        free_parsed_args(parsed_args);
+    if (!shell || !shell->command) {
+        fprintf(stderr, "repeat: Invalid shell context.\n");
+        return COMMAND_ERROR;
+    }
+    if (build_repeat_context(shell, &parsed_args, &sub_line, &count) ==
+        EXIT_FAIL) {
         return COMMAND_ERROR;
     }
     loop_status = run_repeat_loop(shell, parsed_args, sub_line, count);
