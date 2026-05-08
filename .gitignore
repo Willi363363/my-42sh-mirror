@@ -17,3 +17,6 @@ compile_commands.json
 *.gcov
 vgcore*
 history
+*.html
+*.js
+*.css
