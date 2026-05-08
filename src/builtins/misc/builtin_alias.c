@@ -22,10 +22,12 @@ static int print_alias(shell_parameters_t *shell, char *name)
             break;
         }
     }
-    if (!alias)
-        return COMMAND_FOUND;
+    if (!alias) {
+        shell->last_exit_code = EXIT_FAIL;
+        return COMMAND_ERROR;
+    }
     for (size_t i = 0; alias->value && alias->value[i]; i++) {
-        printf("%s%c", alias->value[i], alias->value[i + 1] ? ' ' : '\n');
+        printf("%s%c$", alias->value[i], alias->value[i + 1] ? ' ' : '\n');
     }
     return COMMAND_FOUND;
 }
@@ -36,15 +38,16 @@ int builtin_alias(shell_parameters_t *shell)
     size_t argc = word_array_len(cmd);
 
     shell->last_exit_code = SUCCESS;
-    if (argc != 2 && argc != 3)
-        return COMMAND_FOUND;
+    if (argc != 2 && argc != 3) {
+        shell->last_exit_code = EXIT_FAIL;
+        return COMMAND_ERROR;
+    }
     if (argc == 2)
         return print_alias(shell, cmd[1]);
     if (aliases_push(&shell->aliases, cmd[1], cmd[2]) == EXIT_FAIL) {
         fprintf(stderr, "alias: failed to create alias\n");
         shell->last_exit_code = EXIT_FAIL;
-        return COMMAND_FOUND;
+        return COMMAND_ERROR;
     }
-    shell->last_exit_code = SUCCESS;
     return COMMAND_FOUND;
 }

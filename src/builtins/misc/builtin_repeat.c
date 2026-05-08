@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include "builtins/misc.h"
 #include "global.h"
+#include "lexer.h"
 #include "shell.h"
 #include "utils.h"
 
@@ -104,7 +105,7 @@ static int build_repeat_context(shell_parameters_t *shell,
     char **sub_line,
     int *count)
 {
-    *parsed_args = my_str_to_word_array(shell->line);
+    *parsed_args = lex_split_words(shell->line);
     if (parse_repeat_count(*parsed_args, count) == EXIT_FAIL) {
         shell->last_exit_code = 1;
         return EXIT_FAIL;
@@ -125,8 +126,8 @@ int builtin_repeat(shell_parameters_t *shell, char **args)
     char *sub_line = NULL;
 
     (void)args;
-    if (build_repeat_context(shell, &parsed_args, &sub_line, &count) ==
-        EXIT_FAIL) {
+    if (build_repeat_context(shell, &parsed_args, &sub_line, &count)
+        == EXIT_FAIL) {
         free_parsed_args(parsed_args);
         return COMMAND_ERROR;
     }

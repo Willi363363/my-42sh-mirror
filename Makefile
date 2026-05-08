@@ -48,7 +48,7 @@ $(TESTS): $(TESTS_SRC) $(SRC)
 	$(CC) $(TESTS_SRC) $(SRC) -o $(TESTS) $(CFLAGS) $(TESTS_LDFLAGS) $(LDLIBS)
 
 tests_run: $(TESTS)
-	rm -f $(TESTS_COVERAGE_DIR)/*.gcda || true
+	rm -f *.gcda || true
 	./$(TESTS)
 
 tests_show: tests_run

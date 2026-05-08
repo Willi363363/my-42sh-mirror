@@ -6,6 +6,7 @@
 */
 #include <criterion/criterion.h>
 #include <criterion/redirect.h>
+#include <stdio.h>
 #include "builtins/misc.h"
 #include "global.h"
 #include "shell.h"
@@ -18,15 +19,15 @@ static void setup_default_shell(shell_parameters_t *shell)
     env[0] = NULL;
     shell_init(shell, env);
     word_array_push(&shell->command, "alias");
-    aliases_push(&shell->aliases, "ls", "ls -la");
+    aliases_push(&shell->aliases, "l", "ls -la");
 }
 
-Test(builtin_alias, print_existing_alias)
+Test(builtin_alias, print_existing_alias, .init = cr_redirect_stdout)
 {
     shell_parameters_t shell = {0};
 
     setup_default_shell(&shell);
-    word_array_push(&shell.command, "ls");
+    word_array_push(&shell.command, "l");
     cr_assert_eq(builtin_alias(&shell), COMMAND_FOUND);
     shell_clean(&shell);
 }
@@ -37,7 +38,7 @@ Test(builtin_alias, print_nonexistent_alias)
 
     setup_default_shell(&shell);
     word_array_push(&shell.command, "nonexistent");
-    cr_assert_eq(builtin_alias(&shell), COMMAND_FOUND);
+    cr_assert_eq(builtin_alias(&shell), COMMAND_ERROR);
     shell_clean(&shell);
 }
 
@@ -55,11 +56,11 @@ Test(builtin_alias, create_new_alias)
     shell_clean(&shell);
 }
 
-Test(builtin_alias, too_few_arguments, .init = cr_redirect_stderr)
+Test(builtin_alias, too_few_arguments)
 {
     shell_parameters_t shell = {0};
 
     setup_default_shell(&shell);
-    cr_assert_eq(builtin_alias(&shell), COMMAND_FOUND);
+    cr_assert_eq(builtin_alias(&shell), COMMAND_ERROR);
     shell_clean(&shell);
 }
