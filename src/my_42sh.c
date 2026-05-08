@@ -80,7 +80,7 @@ int main_loop(shell_parameters_t *shell)
     return SUCCESS;
 }
 
-int main(int ac, char **av, char **env)
+int my_42sh(int ac, char **av, char **env)
 {
     shell_parameters_t shell = {0};
 

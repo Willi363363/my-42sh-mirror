@@ -18,4 +18,7 @@
     #define RED "\033[1;31m"
     #define GREEN "\033[1;32m"
     #define RESET "\033[0m"
+
+int my_42sh(int ac, char **av, char **env);
+
 #endif /* GLOBAL_H_ */
