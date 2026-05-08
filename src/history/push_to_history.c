@@ -85,23 +85,38 @@ static int check_history_ll(char *history_path,
     return SUCCESS;
 }
 
-void push_to_history(shell_parameters_t *shell)
+static int do_push_history(shell_parameters_t *shell, char *history_path)
 {
     int fd;
     struct stat s;
     int history_exists = 1;
     int line_nb = 1;
+
+    if (stat(history_path, &s) == -1)
+        history_exists = 0;
+    fd = open(history_path, O_WRONLY | O_CREAT | O_APPEND, 0644);
+    if (fd == -1)
+        return EXIT_FAIL;
+    if (history_exists) {
+        if (check_history_ll(history_path, fd, shell, &line_nb) != 0) {
+            close(fd);
+            return EXIT_FAIL;
+        }
+    }
+    write_full_cmd(shell, fd, line_nb);
+    close(fd);
+    return SUCCESS;
+}
+
+void push_to_history(shell_parameters_t *shell)
+{
     char *history_path = get_history_path(shell);
 
     if (!history_path)
         return;
-    if (stat(history_path, &s) == -1)
-        history_exists = 0;
-    fd = open(history_path, O_WRONLY | O_CREAT | O_APPEND, 0644);
-    free(history_path);
-    if (history_exists
-        && check_history_ll(history_path, fd, shell, &line_nb) != 0)
+    if (do_push_history(shell, history_path) != SUCCESS) {
+        free(history_path);
         return;
-    write_full_cmd(shell, fd, line_nb);
-    close(fd);
+    }
+    free(history_path);
 }
