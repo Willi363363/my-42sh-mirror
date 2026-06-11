@@ -293,7 +293,7 @@ This project was developed as part of the Epitech curriculum and is provided as-
 - **Me** - [GitHub Profile](https://github.com/Willi363363)
 - **Ismael** - [Github Profile](https://github.com/geod-dev)
 - **Yael** - [Github Profile](https://github.com/Yael-pie)
-- * **Guilhem** - [Github Profile](https://github.com/guilhemcg)
+- **Guilhem** - [Github Profile](https://github.com/guilhemcg)
 
 ---
 
